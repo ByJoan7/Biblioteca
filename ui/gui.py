@@ -13,23 +13,59 @@ class BibliotecaApp:
 
         self.root.title("Sistema de Biblioteca")
         self.root.state("zoomed")
+        self.root.configure(bg="#0f172a")  # fondo oscuro futurista
 
+        self.estilos()
         self.crear_layout()
+
+
+    # =========================================================
+    # 1.1 ESTILOS MODERNOS
+    # =========================================================
+    def estilos(self):
+        style = ttk.Style()
+        style.theme_use("default")
+
+        # Treeview moderno oscuro
+        style.configure(
+            "Treeview",
+            background="#111827",
+            foreground="#e5e7eb",
+            fieldbackground="#111827",
+            rowheight=28,
+            borderwidth=0,
+            font=("Segoe UI", 10)
+        )
+
+        style.configure(
+            "Treeview.Heading",
+            background="#1f2937",
+            foreground="white",
+            font=("Segoe UI", 11, "bold")
+        )
+
+        style.map(
+            "Treeview",
+            background=[("selected", "#2563eb")],
+            foreground=[("selected", "white")]
+        )
 
 
     # =========================================================
     # 2. LAYOUT GENERAL
     # =========================================================
     def crear_layout(self):
-        self.main_frame = tk.Frame(self.root)
+        self.main_frame = tk.Frame(self.root, bg="#0f172a")
         self.main_frame.pack(fill="both", expand=True)
 
-        # Sidebar
-        self.sidebar = tk.Frame(self.main_frame, bg="#2c3e50", width=250)
+        # Sidebar futurista
+        self.sidebar = tk.Frame(self.main_frame, bg="#0b1220", width=245)
         self.sidebar.pack(side="left", fill="y")
 
-        # Contenido
-        self.contenido = tk.Frame(self.main_frame, bg="#ecf0f1")
+        self.sidebar.pack_propagate(False)
+
+        # Contenido principal
+        self.contenido = tk.Frame(self.main_frame, bg="#0f172a")
         self.contenido.pack(side="right", fill="both", expand=True)
 
         self.crear_sidebar()
@@ -39,36 +75,50 @@ class BibliotecaApp:
     def crear_sidebar(self):
         titulo = tk.Label(
             self.sidebar,
-            text="Biblioteca",
-            bg="#2c3e50",
-            fg="white",
-            font=("Arial", 18, "bold")
+            text="📚 BIBLIOTECA",
+            bg="#0b1220",
+            fg="#38bdf8",
+            font=("Segoe UI", 18, "bold")
         )
-        titulo.pack(pady=20)
+        titulo.pack(pady=25)
 
-        self.crear_boton("Materiales", self.mostrar_materiales)
-        self.crear_boton("Usuarios", self.mostrar_usuarios)
-        self.crear_boton("Préstamos", self.mostrar_prestamos)
-        self.crear_boton("Informes", self.mostrar_informes)
+        self.crear_boton("📦 Materiales", self.mostrar_materiales)
+        self.crear_boton("👤 Usuarios", self.mostrar_usuarios)
+        self.crear_boton("🔄 Préstamos", self.mostrar_prestamos)
+        self.crear_boton("📊 Informes", self.mostrar_informes)
 
-        tk.Label(self.sidebar, bg="#2c3e50").pack(expand=True)
+        tk.Label(self.sidebar, bg="#0b1220").pack(expand=True)
 
-        self.crear_boton("Salir", self.root.quit, color="#e74c3c")
+        self.crear_boton("⛔ Salir", self.root.quit, color="#ef4444")
 
 
-    def crear_boton(self, texto, comando, color="#34495e"):
+    def crear_boton(self, texto, comando, color="#1f2937"):
         btn = tk.Button(
             self.sidebar,
             text=texto,
             bg=color,
             fg="white",
-            font=("Arial", 12),
+            font=("Segoe UI", 11),
             relief="flat",
+            activebackground="#2563eb",
+            activeforeground="white",
             command=comando,
             padx=10,
-            pady=10
+            pady=12,
+            cursor="hand2"
         )
-        btn.pack(fill="x", padx=10, pady=5)
+
+        btn.pack(fill="x", padx=15, pady=6)
+
+        # Hover effect
+        def on_enter(e):
+            btn.config(bg="#2563eb")
+
+        def on_leave(e):
+            btn.config(bg=color)
+
+        btn.bind("<Enter>", on_enter)
+        btn.bind("<Leave>", on_leave)
 
 
     # =========================================================
@@ -82,8 +132,9 @@ class BibliotecaApp:
     def abrir_formulario(self, titulo):
         ventana = tk.Toplevel(self.root)
         ventana.title(titulo)
-        ventana.geometry("400x300")
+        ventana.geometry("420x340")
         ventana.resizable(False, False)
+        ventana.configure(bg="#0f172a")
         return ventana
 
 
@@ -93,12 +144,24 @@ class BibliotecaApp:
     def mostrar_inicio(self):
         self.limpiar_contenido()
 
+        cont = tk.Frame(self.contenido, bg="#0f172a")
+        cont.pack(expand=True)
+
         tk.Label(
-            self.contenido,
-            text="Bienvenido al Sistema de Biblioteca",
-            font=("Arial", 24, "bold"),
-            bg="#ecf0f1"
-        ).pack(pady=50)
+            cont,
+            text="Sistema de Biblioteca Inteligente",
+            font=("Segoe UI", 26, "bold"),
+            fg="#38bdf8",
+            bg="#0f172a"
+        ).pack(pady=20)
+
+        tk.Label(
+            cont,
+            text="Gestión moderna de libros, usuarios y préstamos",
+            font=("Segoe UI", 14),
+            fg="#94a3b8",
+            bg="#0f172a"
+        ).pack()
 
 
     def mostrar_prestamos(self):
@@ -106,9 +169,10 @@ class BibliotecaApp:
 
         tk.Label(
             self.contenido,
-            text="Préstamos y Devoluciones",
-            font=("Arial", 20),
-            bg="#ecf0f1"
+            text="🔄 Préstamos y Devoluciones",
+            font=("Segoe UI", 20, "bold"),
+            fg="white",
+            bg="#0f172a"
         ).pack(pady=20)
 
 
@@ -117,9 +181,10 @@ class BibliotecaApp:
 
         tk.Label(
             self.contenido,
-            text="Informes",
-            font=("Arial", 20),
-            bg="#ecf0f1"
+            text="📊 Informes",
+            font=("Segoe UI", 20, "bold"),
+            fg="white",
+            bg="#0f172a"
         ).pack(pady=20)
 
 
@@ -131,46 +196,45 @@ class BibliotecaApp:
 
         tk.Label(
             self.contenido,
-            text="Gestión de Materiales",
-            font=("Arial", 20),
-            bg="#ecf0f1"
-        ).pack(pady=20)
+            text="📦 Gestión de Materiales",
+            font=("Segoe UI", 20, "bold"),
+            fg="white",
+            bg="#0f172a"
+        ).pack(pady=15)
 
-        frame_tabla = tk.Frame(self.contenido)
-        frame_tabla.pack(fill="both", expand=True, padx=20, pady=20)
-
-        scroll_y = tk.Scrollbar(frame_tabla, orient="vertical")
-        scroll_x = tk.Scrollbar(frame_tabla, orient="horizontal")
+        frame_tabla = tk.Frame(self.contenido, bg="#0f172a")
+        frame_tabla.pack(fill="both", expand=True, padx=25, pady=15)
 
         self.tabla_materiales = ttk.Treeview(
             frame_tabla,
             columns=("ID", "Título", "Autor", "Categoría", "Disponible", "Tipo"),
             show="headings",
-            yscrollcommand=scroll_y.set,
-            xscrollcommand=scroll_x.set
         )
 
         self.tabla_materiales.pack(fill="both", expand=True)
 
-        # Cabeceras
-        for col in ("ID", "Título", "Autor", "Categoría", "Disponible", "Tipo"):
+        cols = ("ID", "Título", "Autor", "Categoría", "Disponible", "Tipo")
+
+        for col in cols:
             self.tabla_materiales.heading(col, text=col)
 
-        # Columnas
         self.tabla_materiales.column("ID", width=80, anchor="center")
-        self.tabla_materiales.column("Título", width=220)
-        self.tabla_materiales.column("Autor", width=150)
-        self.tabla_materiales.column("Categoría", width=130)
-        self.tabla_materiales.column("Disponible", width=100, anchor="center")
-        self.tabla_materiales.column("Tipo", width=100, anchor="center")
+        self.tabla_materiales.column("Título", width=240)
+        self.tabla_materiales.column("Autor", width=160)
+        self.tabla_materiales.column("Categoría", width=140)
+        self.tabla_materiales.column("Disponible", width=110, anchor="center")
+        self.tabla_materiales.column("Tipo", width=110, anchor="center")
 
         self.cargar_materiales()
 
         tk.Button(
             self.contenido,
             text="➕ Añadir libro",
-            bg="#27ae60",
+            bg="#22c55e",
             fg="white",
+            font=("Segoe UI", 11, "bold"),
+            relief="flat",
+            cursor="hand2",
             command=self.formulario_nuevo_libro
         ).pack(pady=10)
 
@@ -203,9 +267,23 @@ class BibliotecaApp:
         campos = ["ID", "Título", "Autor", "Categoría", "ISBN"]
 
         for campo in campos:
-            tk.Label(win, text=campo).pack()
-            entry = tk.Entry(win)
-            entry.pack()
+            tk.Label(
+                win,
+                text=campo,
+                fg="white",
+                bg="#0f172a",
+                font=("Segoe UI", 10)
+            ).pack(pady=3)
+
+            entry = tk.Entry(
+                win,
+                bg="#1f2937",
+                fg="white",
+                insertbackground="white",
+                relief="flat"
+            )
+            entry.pack(pady=3, ipady=4, ipadx=5)
+
             entries[campo] = entry
 
         def guardar():
@@ -223,7 +301,15 @@ class BibliotecaApp:
             self.cargar_materiales()
             win.destroy()
 
-        tk.Button(win, text="Guardar", bg="#2ecc71", fg="white", command=guardar).pack(pady=10)
+        tk.Button(
+            win,
+            text="Guardar",
+            bg="#22c55e",
+            fg="white",
+            font=("Segoe UI", 11, "bold"),
+            relief="flat",
+            command=guardar
+        ).pack(pady=15)
 
 
     # =========================================================
@@ -234,9 +320,10 @@ class BibliotecaApp:
 
         tk.Label(
             self.contenido,
-            text="Gestión de Usuarios",
-            font=("Arial", 20),
-            bg="#ecf0f1"
+            text="👤 Gestión de Usuarios",
+            font=("Segoe UI", 20, "bold"),
+            fg="white",
+            bg="#0f172a"
         ).pack(pady=20)
 
         self.tabla_usuarios = ttk.Treeview(
@@ -255,8 +342,11 @@ class BibliotecaApp:
         tk.Button(
             self.contenido,
             text="➕ Añadir usuario",
-            bg="#2980b9",
+            bg="#3b82f6",
             fg="white",
+            font=("Segoe UI", 11, "bold"),
+            relief="flat",
+            cursor="hand2",
             command=self.formulario_usuario
         ).pack(pady=10)
 
@@ -285,9 +375,17 @@ class BibliotecaApp:
         campos = ["ID", "Nombre", "Tipo"]
 
         for campo in campos:
-            tk.Label(win, text=campo).pack()
-            entry = tk.Entry(win)
-            entry.pack()
+            tk.Label(win, text=campo, fg="white", bg="#0f172a").pack(pady=3)
+
+            entry = tk.Entry(
+                win,
+                bg="#1f2937",
+                fg="white",
+                insertbackground="white",
+                relief="flat"
+            )
+            entry.pack(pady=3, ipady=4)
+
             entries[campo] = entry
 
         def guardar():
@@ -303,4 +401,12 @@ class BibliotecaApp:
             self.cargar_usuarios()
             win.destroy()
 
-        tk.Button(win, text="Guardar", bg="#2ecc71", fg="white", command=guardar).pack(pady=10)
+        tk.Button(
+            win,
+            text="Guardar",
+            bg="#22c55e",
+            fg="white",
+            font=("Segoe UI", 11, "bold"),
+            relief="flat",
+            command=guardar
+        ).pack(pady=15)
