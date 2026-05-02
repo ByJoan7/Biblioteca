@@ -4,30 +4,37 @@ from tkinter import ttk
 
 class BibliotecaApp:
 
+    # =========================================================
+    # 1. INICIALIZACIÓN
+    # =========================================================
     def __init__(self, root, service):
         self.root = root
         self.service = service
-        
+
         self.root.title("Sistema de Biblioteca")
         self.root.state("zoomed")
 
         self.crear_layout()
 
+
+    # =========================================================
+    # 2. LAYOUT GENERAL
+    # =========================================================
     def crear_layout(self):
-        # ===== CONTENEDOR PRINCIPAL =====
         self.main_frame = tk.Frame(self.root)
         self.main_frame.pack(fill="both", expand=True)
 
-        # ===== SIDEBAR =====
+        # Sidebar
         self.sidebar = tk.Frame(self.main_frame, bg="#2c3e50", width=250)
         self.sidebar.pack(side="left", fill="y")
 
-        # ===== CONTENIDO =====
+        # Contenido
         self.contenido = tk.Frame(self.main_frame, bg="#ecf0f1")
         self.contenido.pack(side="right", fill="both", expand=True)
 
         self.crear_sidebar()
         self.mostrar_inicio()
+
 
     def crear_sidebar(self):
         titulo = tk.Label(
@@ -39,7 +46,6 @@ class BibliotecaApp:
         )
         titulo.pack(pady=20)
 
-        # Botones menú
         self.crear_boton("Materiales", self.mostrar_materiales)
         self.crear_boton("Usuarios", self.mostrar_usuarios)
         self.crear_boton("Préstamos", self.mostrar_prestamos)
@@ -48,6 +54,7 @@ class BibliotecaApp:
         tk.Label(self.sidebar, bg="#2c3e50").pack(expand=True)
 
         self.crear_boton("Salir", self.root.quit, color="#e74c3c")
+
 
     def crear_boton(self, texto, comando, color="#34495e"):
         btn = tk.Button(
@@ -63,43 +70,78 @@ class BibliotecaApp:
         )
         btn.pack(fill="x", padx=10, pady=5)
 
+
+    # =========================================================
+    # 3. UTILIDADES
+    # =========================================================
     def limpiar_contenido(self):
         for widget in self.contenido.winfo_children():
             widget.destroy()
 
-    # ===== PANTALLAS =====
 
+    def abrir_formulario(self, titulo):
+        ventana = tk.Toplevel(self.root)
+        ventana.title(titulo)
+        ventana.geometry("400x300")
+        ventana.resizable(False, False)
+        return ventana
+
+
+    # =========================================================
+    # 4. PANTALLAS PRINCIPALES
+    # =========================================================
     def mostrar_inicio(self):
         self.limpiar_contenido()
 
-        label = tk.Label(
+        tk.Label(
             self.contenido,
             text="Bienvenido al Sistema de Biblioteca",
             font=("Arial", 24, "bold"),
             bg="#ecf0f1"
-        )
-        label.pack(pady=50)
+        ).pack(pady=50)
 
+
+    def mostrar_prestamos(self):
+        self.limpiar_contenido()
+
+        tk.Label(
+            self.contenido,
+            text="Préstamos y Devoluciones",
+            font=("Arial", 20),
+            bg="#ecf0f1"
+        ).pack(pady=20)
+
+
+    def mostrar_informes(self):
+        self.limpiar_contenido()
+
+        tk.Label(
+            self.contenido,
+            text="Informes",
+            font=("Arial", 20),
+            bg="#ecf0f1"
+        ).pack(pady=20)
+
+
+    # =========================================================
+    # 5. MÓDULO MATERIALES
+    # =========================================================
     def mostrar_materiales(self):
         self.limpiar_contenido()
 
-        titulo = tk.Label(
+        tk.Label(
             self.contenido,
             text="Gestión de Materiales",
             font=("Arial", 20),
             bg="#ecf0f1"
-        )
-        titulo.pack(pady=20)
+        ).pack(pady=20)
 
-        # ===== CONTENEDOR TABLA =====
         frame_tabla = tk.Frame(self.contenido)
         frame_tabla.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # ===== SCROLLBARS =====
         scroll_y = tk.Scrollbar(frame_tabla, orient="vertical")
         scroll_x = tk.Scrollbar(frame_tabla, orient="horizontal")
 
-        # ===== TABLA =====
         self.tabla_materiales = ttk.Treeview(
             frame_tabla,
             columns=("ID", "Título", "Autor", "Categoría", "Disponible", "Tipo"),
@@ -110,15 +152,11 @@ class BibliotecaApp:
 
         self.tabla_materiales.pack(fill="both", expand=True)
 
-        # ===== CABECERAS =====
-        self.tabla_materiales.heading("ID", text="ID")
-        self.tabla_materiales.heading("Título", text="Título")
-        self.tabla_materiales.heading("Autor", text="Autor")
-        self.tabla_materiales.heading("Categoría", text="Categoría")
-        self.tabla_materiales.heading("Disponible", text="Disponible")
-        self.tabla_materiales.heading("Tipo", text="Tipo")
+        # Cabeceras
+        for col in ("ID", "Título", "Autor", "Categoría", "Disponible", "Tipo"):
+            self.tabla_materiales.heading(col, text=col)
 
-        # ===== ANCHO DE COLUMNAS =====
+        # Columnas
         self.tabla_materiales.column("ID", width=80, anchor="center")
         self.tabla_materiales.column("Título", width=220)
         self.tabla_materiales.column("Autor", width=150)
@@ -126,79 +164,23 @@ class BibliotecaApp:
         self.tabla_materiales.column("Disponible", width=100, anchor="center")
         self.tabla_materiales.column("Tipo", width=100, anchor="center")
 
-        # ===== CARGAR DATOS =====
         self.cargar_materiales()
 
-        # ===== BOTÓN AÑADIR =====
         tk.Button(
             self.contenido,
             text="➕ Añadir libro",
             bg="#27ae60",
             fg="white",
-            font=("Arial", 12),
             command=self.formulario_nuevo_libro
         ).pack(pady=10)
 
-    def mostrar_usuarios(self):
-        self.limpiar_contenido()
 
-        titulo = tk.Label(
-            self.contenido,
-            text="Gestión de Usuarios",
-            font=("Arial", 20),
-            bg="#ecf0f1"
-        )
-        titulo.pack(pady=20)
-
-        self.tabla_usuarios = ttk.Treeview(
-            self.contenido,
-            columns=("ID", "Nombre", "Tipo", "Sancionado"),
-            show="headings"
-        )
-
-        self.tabla_usuarios.heading("ID", text="ID")
-        self.tabla_usuarios.heading("Nombre", text="Nombre")
-        self.tabla_usuarios.heading("Tipo", text="Tipo")
-        self.tabla_usuarios.heading("Sancionado", text="Sancionado")
-
-        self.tabla_usuarios.pack(fill="both", expand=True, padx=20, pady=20)
-
-        self.cargar_usuarios()
-
-        tk.Button(
-            self.contenido,
-            text="➕ Añadir usuario",
-            bg="#2980b9",
-            fg="white",
-            command=self.formulario_usuario
-        ).pack(pady=10)
-
-    def mostrar_prestamos(self):
-        self.limpiar_contenido()
-
-        titulo = tk.Label(self.contenido, text="Préstamos y Devoluciones", font=("Arial", 20), bg="#ecf0f1")
-        titulo.pack(pady=20)
-
-    def mostrar_informes(self):
-        self.limpiar_contenido()
-
-        titulo = tk.Label(self.contenido, text="Informes", font=("Arial", 20), bg="#ecf0f1")
-        titulo.pack(pady=20)
-
-    def abrir_formulario(self, titulo):
-        ventana = tk.Toplevel(self.root)
-        ventana.title(titulo)
-        ventana.geometry("400x300")
-        ventana.resizable(False, False)
-        return ventana
-    
     def cargar_materiales(self):
         for i in self.tabla_materiales.get_children():
             self.tabla_materiales.delete(i)
 
         for m in self.service.obtener_materiales():
-
-            tipo = getattr(m, "__class__", type(m)).__name__
+            tipo = type(m).__name__
 
             self.tabla_materiales.insert(
                 "",
@@ -213,51 +195,71 @@ class BibliotecaApp:
                 )
             )
 
+
     def formulario_nuevo_libro(self):
         win = self.abrir_formulario("Nuevo Libro")
 
-        tk.Label(win, text="ID").pack()
-        id_entry = tk.Entry(win)
-        id_entry.pack()
+        entries = {}
+        campos = ["ID", "Título", "Autor", "Categoría", "ISBN"]
 
-        tk.Label(win, text="Título").pack()
-        titulo_entry = tk.Entry(win)
-        titulo_entry.pack()
-
-        tk.Label(win, text="Autor").pack()
-        autor_entry = tk.Entry(win)
-        autor_entry.pack()
-
-        tk.Label(win, text="Categoría").pack()
-        cat_entry = tk.Entry(win)
-        cat_entry.pack()
-
-        tk.Label(win, text="ISBN").pack()
-        isbn_entry = tk.Entry(win)
-        isbn_entry.pack()
+        for campo in campos:
+            tk.Label(win, text=campo).pack()
+            entry = tk.Entry(win)
+            entry.pack()
+            entries[campo] = entry
 
         def guardar():
             from models.libro import Libro
 
             libro = Libro(
-                id_entry.get(),
-                titulo_entry.get(),
-                autor_entry.get(),
-                cat_entry.get(),
-                isbn_entry.get()
+                entries["ID"].get(),
+                entries["Título"].get(),
+                entries["Autor"].get(),
+                entries["Categoría"].get(),
+                entries["ISBN"].get()
             )
 
             self.service.agregar_material(libro)
             self.cargar_materiales()
             win.destroy()
 
+        tk.Button(win, text="Guardar", bg="#2ecc71", fg="white", command=guardar).pack(pady=10)
+
+
+    # =========================================================
+    # 6. MÓDULO USUARIOS
+    # =========================================================
+    def mostrar_usuarios(self):
+        self.limpiar_contenido()
+
+        tk.Label(
+            self.contenido,
+            text="Gestión de Usuarios",
+            font=("Arial", 20),
+            bg="#ecf0f1"
+        ).pack(pady=20)
+
+        self.tabla_usuarios = ttk.Treeview(
+            self.contenido,
+            columns=("ID", "Nombre", "Tipo", "Sancionado"),
+            show="headings"
+        )
+
+        for col in ("ID", "Nombre", "Tipo", "Sancionado"):
+            self.tabla_usuarios.heading(col, text=col)
+
+        self.tabla_usuarios.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.cargar_usuarios()
+
         tk.Button(
-            win,
-            text="Guardar",
-            bg="#2ecc71",
+            self.contenido,
+            text="➕ Añadir usuario",
+            bg="#2980b9",
             fg="white",
-            command=guardar
+            command=self.formulario_usuario
         ).pack(pady=10)
+
 
     def cargar_usuarios(self):
         for i in self.tabla_usuarios.get_children():
@@ -275,39 +277,30 @@ class BibliotecaApp:
                 )
             )
 
+
     def formulario_usuario(self):
         win = self.abrir_formulario("Nuevo Usuario")
 
-        tk.Label(win, text="ID").pack()
-        id_entry = tk.Entry(win)
-        id_entry.pack()
+        entries = {}
+        campos = ["ID", "Nombre", "Tipo"]
 
-        tk.Label(win, text="Nombre").pack()
-        nombre_entry = tk.Entry(win)
-        nombre_entry.pack()
-
-        tk.Label(win, text="Tipo (socio/admin/bibliotecario)").pack()
-        tipo_entry = tk.Entry(win)
-        tipo_entry.pack()
+        for campo in campos:
+            tk.Label(win, text=campo).pack()
+            entry = tk.Entry(win)
+            entry.pack()
+            entries[campo] = entry
 
         def guardar():
             from models.usuario import Usuario
 
             usuario = Usuario(
-                id_entry.get(),
-                nombre_entry.get(),
-                tipo_entry.get()
+                entries["ID"].get(),
+                entries["Nombre"].get(),
+                entries["Tipo"].get()
             )
 
             self.service.agregar_usuario(usuario)
             self.cargar_usuarios()
             win.destroy()
 
-        tk.Button(
-            win,
-            text="Guardar",
-            bg="#2ecc71",
-            fg="white",
-            command=guardar
-        ).pack(pady=10)
-    
+        tk.Button(win, text="Guardar", bg="#2ecc71", fg="white", command=guardar).pack(pady=10)
