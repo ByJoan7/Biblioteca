@@ -7,6 +7,7 @@ class BibliotecaApp:
     # =========================================================
     # 1. INICIALIZACIÓN
     # =========================================================
+
     def __init__(self, root, service):
         self.root = root
         self.service = service
@@ -18,10 +19,10 @@ class BibliotecaApp:
         self.estilos()
         self.crear_layout()
 
-
     # =========================================================
     # 1.1 ESTILOS MODERNOS
     # =========================================================
+
     def estilos(self):
         style = ttk.Style()
         style.theme_use("default")
@@ -50,10 +51,10 @@ class BibliotecaApp:
             foreground=[("selected", "white")]
         )
 
-
     # =========================================================
     # 2. LAYOUT GENERAL
     # =========================================================
+
     def crear_layout(self):
         self.main_frame = tk.Frame(self.root, bg="#0f172a")
         self.main_frame.pack(fill="both", expand=True)
@@ -70,7 +71,6 @@ class BibliotecaApp:
 
         self.crear_sidebar()
         self.mostrar_inicio()
-
 
     def crear_sidebar(self):
         titulo = tk.Label(
@@ -90,7 +90,6 @@ class BibliotecaApp:
         tk.Label(self.sidebar, bg="#0b1220").pack(expand=True)
 
         self.crear_boton("⛔ Salir", self.root.quit, color="#ef4444")
-
 
     def crear_boton(self, texto, comando, color="#1f2937"):
         btn = tk.Button(
@@ -120,27 +119,37 @@ class BibliotecaApp:
         btn.bind("<Enter>", on_enter)
         btn.bind("<Leave>", on_leave)
 
-
     # =========================================================
     # 3. UTILIDADES
     # =========================================================
+
     def limpiar_contenido(self):
         for widget in self.contenido.winfo_children():
             widget.destroy()
 
-
-    def abrir_formulario(self, titulo):
+    def abrir_formulario(self, titulo, ancho=420, alto=340):
         ventana = tk.Toplevel(self.root)
         ventana.title(titulo)
-        ventana.geometry("420x340")
         ventana.resizable(False, False)
         ventana.configure(bg="#0f172a")
-        return ventana
 
+        ventana.update_idletasks()
+
+        pantalla_ancho = ventana.winfo_screenwidth()
+        pantalla_alto = ventana.winfo_screenheight()
+
+        x = (pantalla_ancho // 2) - (ancho // 2)
+        y = (pantalla_alto // 2) - (alto // 2)
+
+        ventana.geometry(f"{ancho}x{alto}+{x}+{y}")
+        ventana.deiconify()
+        
+        return ventana
 
     # =========================================================
     # 4. PANTALLAS PRINCIPALES
     # =========================================================
+
     def mostrar_inicio(self):
         self.limpiar_contenido()
 
@@ -163,7 +172,6 @@ class BibliotecaApp:
             bg="#0f172a"
         ).pack()
 
-
     def mostrar_prestamos(self):
         self.limpiar_contenido()
 
@@ -174,7 +182,6 @@ class BibliotecaApp:
             fg="white",
             bg="#0f172a"
         ).pack(pady=20)
-
 
     def mostrar_informes(self):
         self.limpiar_contenido()
@@ -187,10 +194,21 @@ class BibliotecaApp:
             bg="#0f172a"
         ).pack(pady=20)
 
+    def centrar_ventana(self, win, ancho, alto):
+        win.update_idletasks()
+
+        pantalla_ancho = win.winfo_screenwidth()
+        pantalla_alto = win.winfo_screenheight()
+
+        x = (pantalla_ancho // 2) - (ancho // 2)
+        y = (pantalla_alto // 2) - (alto // 2)
+
+        win.geometry(f"{ancho}x{alto}+{x}+{y}")
 
     # =========================================================
     # 5. MÓDULO MATERIALES
     # =========================================================
+
     def mostrar_materiales(self):
         self.limpiar_contenido()
 
@@ -238,7 +256,6 @@ class BibliotecaApp:
             command=self.formulario_nuevo_libro
         ).pack(pady=10)
 
-
     def cargar_materiales(self):
         for i in self.tabla_materiales.get_children():
             self.tabla_materiales.delete(i)
@@ -259,30 +276,35 @@ class BibliotecaApp:
                 )
             )
 
-
     def formulario_nuevo_libro(self):
         win = self.abrir_formulario("Nuevo Libro")
+        win.configure(bg="#0f172a")
+
+        win.resizable(False, False)
+
+        main = tk.Frame(win, bg="#0f172a")
+        main.pack(fill="both", expand=True, padx=20, pady=20)
 
         entries = {}
         campos = ["ID", "Título", "Autor", "Categoría", "ISBN"]
 
         for campo in campos:
             tk.Label(
-                win,
+                main,
                 text=campo,
                 fg="white",
                 bg="#0f172a",
                 font=("Segoe UI", 10)
-            ).pack(pady=3)
+            ).pack(anchor="w", pady=(8, 2))
 
             entry = tk.Entry(
-                win,
+                main,
                 bg="#1f2937",
                 fg="white",
                 insertbackground="white",
                 relief="flat"
             )
-            entry.pack(pady=3, ipady=4, ipadx=5)
+            entry.pack(fill="x", ipady=6)
 
             entries[campo] = entry
 
@@ -301,20 +323,24 @@ class BibliotecaApp:
             self.cargar_materiales()
             win.destroy()
 
-        tk.Button(
-            win,
+        tk.Frame(main, height=10, bg="#0f172a").pack()
+
+        btn = tk.Button(
+            main,
             text="Guardar",
             bg="#22c55e",
             fg="white",
             font=("Segoe UI", 11, "bold"),
             relief="flat",
-            command=guardar
-        ).pack(pady=15)
-
+            command=guardar,
+            cursor="hand2"
+        )
+        btn.pack(fill="x", pady=(15, 0))
 
     # =========================================================
     # 6. MÓDULO USUARIOS
     # =========================================================
+
     def mostrar_usuarios(self):
         self.limpiar_contenido()
 
@@ -350,7 +376,6 @@ class BibliotecaApp:
             command=self.formulario_usuario
         ).pack(pady=10)
 
-
     def cargar_usuarios(self):
         for i in self.tabla_usuarios.get_children():
             self.tabla_usuarios.delete(i)
@@ -367,24 +392,35 @@ class BibliotecaApp:
                 )
             )
 
-
     def formulario_usuario(self):
         win = self.abrir_formulario("Nuevo Usuario")
+        win.configure(bg="#0f172a")
+
+        win.resizable(False, False)
+
+        main = tk.Frame(win, bg="#0f172a")
+        main.pack(fill="both", expand=True, padx=20, pady=20)
 
         entries = {}
         campos = ["ID", "Nombre", "Tipo"]
 
         for campo in campos:
-            tk.Label(win, text=campo, fg="white", bg="#0f172a").pack(pady=3)
+            tk.Label(
+                main,
+                text=campo,
+                fg="white",
+                bg="#0f172a",
+                font=("Segoe UI", 10)
+            ).pack(anchor="w", pady=(8, 2))
 
             entry = tk.Entry(
-                win,
+                main,
                 bg="#1f2937",
                 fg="white",
                 insertbackground="white",
                 relief="flat"
             )
-            entry.pack(pady=3, ipady=4)
+            entry.pack(fill="x", ipady=6)
 
             entries[campo] = entry
 
@@ -401,12 +437,16 @@ class BibliotecaApp:
             self.cargar_usuarios()
             win.destroy()
 
-        tk.Button(
-            win,
+        tk.Frame(main, height=10, bg="#0f172a").pack()
+
+        btn = tk.Button(
+            main,
             text="Guardar",
             bg="#22c55e",
             fg="white",
             font=("Segoe UI", 11, "bold"),
             relief="flat",
-            command=guardar
-        ).pack(pady=15)
+            command=guardar,
+            cursor="hand2"
+        )
+        btn.pack(fill="x", pady=(15, 0))

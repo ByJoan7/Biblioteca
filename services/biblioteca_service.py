@@ -9,6 +9,7 @@ class BibliotecaService:
     # =========================================================
     # 1. INICIALIZACIÓN
     # =========================================================
+
     def __init__(self):
         self.materiales = {}
         self.usuarios = {}
@@ -21,10 +22,10 @@ class BibliotecaService:
 
         self.cargar_datos()
 
-
     # =========================================================
     # 2. API PÚBLICA - MATERIALES
     # =========================================================
+
     def agregar_material(self, material):
         self.materiales[material._id] = material
         self.guardar_materiales()
@@ -32,10 +33,10 @@ class BibliotecaService:
     def obtener_materiales(self):
         return list(self.materiales.values())
 
-
     # =========================================================
     # 3. API PÚBLICA - USUARIOS
     # =========================================================
+
     def agregar_usuario(self, usuario):
         self.usuarios[usuario._id] = usuario
         self.guardar_usuarios()
@@ -43,10 +44,10 @@ class BibliotecaService:
     def obtener_usuarios(self):
         return list(self.usuarios.values())
 
-
     # =========================================================
     # 4. API PÚBLICA - PRÉSTAMOS
     # =========================================================
+
     def prestar_material(self, usuario_id, material_id):
         usuario = self.usuarios.get(usuario_id)
         material = self.materiales.get(material_id)
@@ -70,7 +71,6 @@ class BibliotecaService:
 
         return prestamo
 
-
     def devolver_material(self, material_id):
         for p in self.prestamos:
             if p.material._id == material_id and p.activo:
@@ -83,10 +83,10 @@ class BibliotecaService:
 
         raise Exception("Préstamo no encontrado")
 
-
     # =========================================================
     # 5. PERSISTENCIA (GUARDAR)
     # =========================================================
+
     def guardar_materiales(self):
         data = [m.to_dict() for m in self.materiales.values()]
         self.storage_materiales.guardar(data)
@@ -99,14 +99,13 @@ class BibliotecaService:
         data = [p.to_dict() for p in self.prestamos]
         self.storage_prestamos.guardar(data)
 
-
     # =========================================================
     # 6. CARGA DE DATOS
     # =========================================================
+
     def cargar_datos(self):
         self._cargar_materiales()
         self._cargar_usuarios()
-
 
     # ----------------- PRIVADO: MATERIALES -----------------
     def _cargar_materiales(self):
@@ -129,7 +128,6 @@ class BibliotecaService:
                 material.prestar()
 
             self.materiales[m["id"]] = material
-
 
     # ----------------- PRIVADO: USUARIOS -----------------
     def _cargar_usuarios(self):
