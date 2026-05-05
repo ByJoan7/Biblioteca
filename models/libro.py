@@ -1,8 +1,8 @@
 from .material import Material
 
 class Libro(Material):
-    def __init__(self, id, titulo, autor, isbn):
-        super().__init__(id, titulo, autor)
+    def __init__(self, id, titulo, autor, categoria, isbn):
+        super().__init__(id, titulo, autor, categoria)
         self._isbn = isbn
 
     def to_dict(self):

@@ -20,7 +20,7 @@ class BibliotecaApp:
         self.crear_layout()
 
     # =========================================================
-    # 1.1 ESTILOS MODERNOS
+    # 1.1 ESTILOS 
     # =========================================================
 
     def estilos(self):
@@ -82,8 +82,8 @@ class BibliotecaApp:
         )
         titulo.pack(pady=25)
 
-        self.crear_boton("📦 Materiales", self.mostrar_materiales)
         self.crear_boton("👤 Usuarios", self.mostrar_usuarios)
+        self.crear_boton("📦 Materiales", self.mostrar_materiales)
         self.crear_boton("🔄 Préstamos", self.mostrar_prestamos)
         self.crear_boton("📅 Reservas", self.mostrar_reservas)
         self.crear_boton("📊 Informes", self.mostrar_informes)
@@ -293,402 +293,6 @@ class BibliotecaApp:
         win.geometry(f"{ancho}x{alto}+{x}+{y}")
 
     # =========================================================
-    # 5. MÓDULO MATERIALES
-    # =========================================================
-
-    def mostrar_materiales(self):
-        self.limpiar_contenido()
-
-        tk.Label(
-            self.contenido,
-            text="👤 Gestión de Materiales",
-            font=("Segoe UI", 20, "bold"),
-            fg="white",
-            bg="#0f172a"
-        ).pack(pady=20)
-
-        # Barra de búsqueda
-        frame_busqueda = tk.Frame(self.contenido, bg="#0f172a")
-        frame_busqueda.pack(fill="x", padx=25, pady=(0, 10))
-
-        tk.Label(frame_busqueda, text="🔍 Buscar por:", fg="white", bg="#0f172a").pack(side="left")
-        self.criterio_busqueda = tk.StringVar(value="título")
-        cb = ttk.Combobox(frame_busqueda, textvariable=self.criterio_busqueda, values=["título", "autor", "categoría"], state="readonly", width=10)
-        cb.pack(side="left", padx=5)
-
-        self.entry_busqueda = tk.Entry(frame_busqueda, bg="#1f2937", fg="white", relief="flat")
-        self.entry_busqueda.pack(side="left", fill="x", expand=True, padx=5, ipady=4)
-        self.entry_busqueda.bind("<KeyRelease>", lambda e: self.cargar_materiales(self.entry_busqueda.get()))
-
-        frame_tabla = tk.Frame(self.contenido, bg="#0f172a")
-        frame_tabla.pack(fill="both", expand=True, padx=25, pady=15)
-
-        self.tabla_materiales = ttk.Treeview(
-            frame_tabla,
-            columns=("ID", "Título", "Autor", "Categoría", "Disponible", "Tipo"),
-            show="headings",
-        )
-
-        self.tabla_materiales.pack(fill="both", expand=True)
-
-        cols = ("ID", "Título", "Autor", "Categoría", "Disponible", "Tipo")
-
-        for col in cols:
-            self.tabla_materiales.heading(col, text=col)
-
-        self.tabla_materiales.column("ID", width=80, anchor="center")
-        self.tabla_materiales.column("Título", width=240)
-        self.tabla_materiales.column("Autor", width=160)
-        self.tabla_materiales.column("Categoría", width=140)
-        self.tabla_materiales.column("Disponible", width=110, anchor="center")
-        self.tabla_materiales.column("Tipo", width=110, anchor="center")
-
-        self.cargar_materiales()
-
-        frame_acciones = tk.Frame(self.contenido, bg="#0f172a")
-        frame_acciones.pack(pady=10)
-
-        tk.Button(
-            frame_acciones,
-            text="➕ Añadir",
-            bg="#22c55e",
-            fg="white",
-            font=("Segoe UI", 11, "bold"),
-            relief="flat",
-            cursor="hand2",
-            command=self.formulario_nuevo_libro
-        ).pack(side="left", padx=10)
-
-        tk.Button(
-            frame_acciones,
-            text="✏️ Editar",
-            bg="#f59e0b",
-            fg="white",
-            font=("Segoe UI", 11, "bold"),
-            relief="flat",
-            cursor="hand2",
-            command=self.formulario_editar_libro
-        ).pack(side="left", padx=10)
-
-        tk.Button(
-            frame_acciones,
-            text="🗑️ Eliminar",
-            bg="#ef4444",
-            fg="white",
-            font=("Segoe UI", 11, "bold"),
-            relief="flat",
-            cursor="hand2",
-            command=self.eliminar_material_seleccionado
-        ).pack(side="left", padx=10)
-
-    def cargar_materiales(self, filtro=""):
-        for i in self.tabla_materiales.get_children():
-            self.tabla_materiales.delete(i)
-
-        if filtro:
-            materiales = self.service.buscar_materiales(self.criterio_busqueda.get(), filtro)
-        else:
-            materiales = self.service.obtener_materiales()
-
-        for m in materiales:
-            tipo = type(m).__name__
-
-            self.tabla_materiales.insert(
-                "",
-                "end",
-                values=(
-                    m._id,
-                    m._titulo,
-                    m._autor,
-                    m._categoria,
-                    "Sí" if m.esta_disponible() else "No",
-                    tipo
-                )
-            )
-
-    def formulario_nuevo_libro(self):
-        win = self.abrir_formulario("Nuevo Libro")
-        win.configure(bg="#0f172a")
-
-        win.resizable(True, True)
-        container = tk.Frame(win, bg="#0f172a")
-        container.pack(fill="both", expand=True, padx=10, pady=10)
-        main = self.crear_scrollable_frame(container)
-
-        tk.Label(main, text="Tipo de Material", fg="white", bg="#0f172a", font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
-        var_tipo = tk.StringVar(value="Libro")
-        tipo_cb = ttk.Combobox(main, textvariable=var_tipo, values=["Libro", "Revista", "Digital"], state="readonly")
-        tipo_cb.pack(fill="x", ipady=4, pady=(0, 10))
-
-        entries = {}
-        campos = ["ID", "Título", "Autor", "Categoría", "ISBN / URL / Edición"]
-
-        for campo in campos:
-            tk.Label(main, text=campo, fg="white", bg="#0f172a", font=("Segoe UI", 10)).pack(anchor="w", pady=(8, 2))
-            entry = tk.Entry(main, bg="#1f2937", fg="white", insertbackground="white", relief="flat")
-            entry.pack(fill="x", ipady=6)
-            entries[campo] = entry
-
-        def guardar():
-            from models.libro import Libro
-            from models.revista import Revista
-            from models.recurso_digital import RecursoDigital
-            
-            t = var_tipo.get()
-            id_val = entries["ID"].get()
-            tit = entries["Título"].get()
-            aut = entries["Autor"].get()
-            cat = entries["Categoría"].get()
-            extra = entries["ISBN / URL / Edición"].get()
-
-            if t == "Libro":
-                material = Libro(id_val, tit, aut, cat, extra)
-            elif t == "Revista":
-                material = Revista(id_val, tit, aut, cat, extra)
-            else:
-                material = RecursoDigital(id_val, tit, aut, cat, extra)
-
-            self.service.agregar_material(material)
-            self.cargar_materiales()
-            win.destroy()
-
-        tk.Frame(main, height=10, bg="#0f172a").pack()
-
-        btn = tk.Button(
-            main,
-            text="Guardar",
-            bg="#22c55e",
-            fg="white",
-            font=("Segoe UI", 11, "bold"),
-            relief="flat",
-            command=guardar,
-            cursor="hand2"
-        )
-        btn.pack(fill="x", pady=(15, 0))
-
-    def eliminar_usuario_seleccionado(self):
-        item = self.tabla_usuarios.selection()
-        if not item:
-            return
-        u_id = self.tabla_usuarios.item(item)["values"][0]
-        if self.service.eliminar_usuario(u_id):
-            self.cargar_usuarios()
-
-    def formulario_editar_usuario(self):
-        item = self.tabla_usuarios.selection()
-        if not item:
-            return
-        valores = self.tabla_usuarios.item(item)["values"]
-        u_id = valores[0]
-
-        win = self.abrir_formulario("Editar Usuario", alto=200)
-        main = self.crear_scrollable_frame(win)
-        
-        tk.Label(main, text="Nombre", fg="white", bg="#0f172a").pack(anchor="w")
-        name_entry = tk.Entry(main, bg="#1f2937", fg="white")
-        name_entry.insert(0, valores[1])
-        name_entry.pack(fill="x", ipady=6)
-
-        def guardar():
-            self.service.modificar_usuario(u_id, {"nombre": name_entry.get()})
-            self.cargar_usuarios()
-            win.destroy()
-
-        tk.Button(main, text="Guardar", bg="#f59e0b", fg="white", command=guardar).pack(fill="x", pady=20)
-
-    # =========================================================
-    # 7. NUEVAS FUNCIONALIDADES
-    # =========================================================
-
-    def eliminar_material_seleccionado(self):
-        item = self.tabla_materiales.selection()
-        if not item:
-            return
-        
-        material_id = self.tabla_materiales.item(item)["values"][0]
-        if self.service.eliminar_material(material_id):
-            self.cargar_materiales()
-
-    def formulario_editar_libro(self):
-        item = self.tabla_materiales.selection()
-        if not item:
-            return
-        
-        valores = self.tabla_materiales.item(item)["values"]
-        material_id = valores[0]
-        
-        win = self.abrir_formulario("Editar Libro")
-        win.resizable(True, True)
-        
-        container = tk.Frame(win, bg="#0f172a")
-        container.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        main = self.crear_scrollable_frame(container)
-
-        entries = {}
-        campos = ["Título", "Autor", "Categoría"]
-        actuales = {"Título": valores[1], "Autor": valores[2], "Categoría": valores[3]}
-
-        for campo in campos:
-            tk.Label(main, text=campo, fg="white", bg="#0f172a").pack(anchor="w", pady=(8, 2))
-            entry = tk.Entry(main, bg="#1f2937", fg="white", relief="flat")
-            entry.insert(0, actuales[campo])
-            entry.pack(fill="x", ipady=6)
-            entries[campo] = entry
-
-        def guardar():
-            datos = {
-                "titulo": entries["Título"].get(),
-                "autor": entries["Autor"].get(),
-                "categoria": entries["Categoría"].get()
-            }
-            self.service.modificar_material(material_id, datos)
-            self.cargar_materiales()
-            win.destroy()
-
-        tk.Button(main, text="Guardar Cambios", bg="#f59e0b", fg="white", command=guardar).pack(fill="x", pady=20)
-
-    def cargar_prestamos(self):
-        for i in self.tabla_prestamos.get_children():
-            self.tabla_prestamos.delete(i)
-
-        for p in self.service.prestamos:
-            estado = "Activo" if p.activo else "Devuelto"
-            if p.activo and p.esta_vencido():
-                estado = "VENCIDO"
-            
-            multa = f"{p.calcular_multa():.2f}€"
-            
-            self.tabla_prestamos.insert(
-                "",
-                "end",
-                values=(
-                    p.usuario._nombre,
-                    p.material._titulo,
-                    p.fecha_vencimiento.strftime("%d/%m/%Y"),
-                    estado,
-                    multa
-                )
-            )
-
-    def formulario_prestar(self):
-        win = self.abrir_formulario("Realizar Préstamo", alto=250)
-        main = tk.Frame(win, bg="#0f172a")
-        main.pack(fill="both", expand=True, padx=20, pady=20)
-
-        tk.Label(main, text="ID Usuario", fg="white", bg="#0f172a").pack(anchor="w")
-        u_id = tk.Entry(main, bg="#1f2937", fg="white")
-        u_id.pack(fill="x", ipady=6)
-
-        tk.Label(main, text="ID Material", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
-        m_id = tk.Entry(main, bg="#1f2937", fg="white")
-        m_id.pack(fill="x", ipady=6)
-
-        tk.Label(main, text="Días de préstamo", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
-        dias = tk.Entry(main, bg="#1f2937", fg="white")
-        dias.insert(0, "14")
-        dias.pack(fill="x", ipady=6)
-
-        def realizar():
-            try:
-                self.service.prestar_material(u_id.get(), m_id.get(), dias.get())
-                self.cargar_prestamos()
-                win.destroy()
-            except Exception as e:
-                from tkinter import messagebox
-                messagebox.showerror("Error", str(e))
-
-        tk.Button(main, text="Prestar", bg="#3b82f6", fg="white", command=realizar).pack(fill="x", pady=20)
-
-    def devolver_seleccionado(self):
-        item = self.tabla_prestamos.selection()
-        if not item:
-            return
-        
-        # Encontrar el préstamo correspondiente
-        idx = self.tabla_prestamos.index(item)
-        prestamo = self.service.prestamos[idx]
-        
-        if prestamo.activo:
-            self.service.devolver_material(prestamo.material._id)
-            self.cargar_prestamos()
-
-    def mostrar_reservas(self):
-        self.limpiar_contenido()
-
-        tk.Label(
-            self.contenido,
-            text="📅 Reservas de Material",
-            font=("Segoe UI", 20, "bold"),
-            fg="white",
-            bg="#0f172a"
-        ).pack(pady=20)
-
-        frame_tabla = tk.Frame(self.contenido, bg="#0f172a")
-        frame_tabla.pack(fill="both", expand=True, padx=25, pady=15)
-
-        self.tabla_reservas = ttk.Treeview(
-            frame_tabla,
-            columns=("Usuario", "Material", "Fecha"),
-            show="headings",
-        )
-        self.tabla_reservas.pack(fill="both", expand=True)
-
-        for col in ("Usuario", "Material", "Fecha"):
-            self.tabla_reservas.heading(col, text=col)
-
-        self.cargar_reservas()
-
-        tk.Button(
-            self.contenido,
-            text="➕ Nueva Reserva",
-            bg="#3b82f6",
-            fg="white",
-            font=("Segoe UI", 11, "bold"),
-            relief="flat",
-            cursor="hand2",
-            command=self.formulario_reserva
-        ).pack(pady=10)
-
-    def cargar_reservas(self):
-        for i in self.tabla_reservas.get_children():
-            self.tabla_reservas.delete(i)
-
-        for r in self.service.obtener_reservas():
-            self.tabla_reservas.insert(
-                "",
-                "end",
-                values=(
-                    r.usuario._nombre,
-                    r.material._titulo,
-                    r.fecha.strftime("%d/%m/%Y")
-                )
-            )
-
-    def formulario_reserva(self):
-        win = self.abrir_formulario("Nueva Reserva", alto=250)
-        main = self.crear_scrollable_frame(win)
-
-        tk.Label(main, text="ID Usuario", fg="white", bg="#0f172a").pack(anchor="w")
-        u_id = tk.Entry(main, bg="#1f2937", fg="white")
-        u_id.pack(fill="x", ipady=6)
-
-        tk.Label(main, text="ID Material", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
-        m_id = tk.Entry(main, bg="#1f2937", fg="white")
-        m_id.pack(fill="x", ipady=6)
-
-        def realizar():
-            try:
-                self.service.reservar_material(u_id.get(), m_id.get())
-                self.cargar_reservas()
-                win.destroy()
-            except Exception as e:
-                from tkinter import messagebox
-                messagebox.showerror("Error", str(e))
-
-        tk.Button(main, text="Reservar", bg="#3b82f6", fg="white", command=realizar).pack(fill="x", pady=20)
-
-    # =========================================================
     # 6. MÓDULO USUARIOS
     # =========================================================
 
@@ -825,8 +429,450 @@ class BibliotecaApp:
         )
         btn.pack(fill="x", pady=(15, 0))
 
+    def eliminar_usuario_seleccionado(self):
+        item = self.tabla_usuarios.selection()
+        if not item:
+            return
+        u_id = self.tabla_usuarios.item(item)["values"][0]
+        if self.service.eliminar_usuario(u_id):
+            self.cargar_usuarios()
+
+    def formulario_editar_usuario(self):
+        item = self.tabla_usuarios.selection()
+        if not item:
+            return
+        valores = self.tabla_usuarios.item(item)["values"]
+        u_id = valores[0]
+
+        win = self.abrir_formulario("Editar Usuario", alto=200)
+        main = self.crear_scrollable_frame(win)
+        
+        tk.Label(main, text="Nombre", fg="white", bg="#0f172a").pack(anchor="w")
+        name_entry = tk.Entry(main, bg="#1f2937", fg="white")
+        name_entry.insert(0, valores[1])
+        name_entry.pack(fill="x", ipady=6)
+
+        def guardar():
+            self.service.modificar_usuario(u_id, {"nombre": name_entry.get()})
+            self.cargar_usuarios()
+            win.destroy()
+
+        tk.Button(main, text="Guardar", bg="#f59e0b", fg="white", command=guardar).pack(fill="x", pady=20)
+
     # =========================================================
-    # 6. MÓDULO INFORMES
+    # 5. MÓDULO MATERIALES
+    # =========================================================
+
+    def mostrar_materiales(self):
+        self.limpiar_contenido()
+
+        tk.Label(
+            self.contenido,
+            text="👤 Gestión de Materiales",
+            font=("Segoe UI", 20, "bold"),
+            fg="white",
+            bg="#0f172a"
+        ).pack(pady=20)
+
+        cont = self.crear_scrollable_frame(self.contenido)
+
+        self.crear_seccion_material(cont, "📚 Libros", "libro")
+        self.crear_seccion_material(cont, "💻 Recursos Digitales", "digital")
+        self.crear_seccion_material(cont, "📰 Revistas", "revista")
+
+    def crear_seccion_material(self, parent, titulo, tipo):
+        frame = tk.Frame(parent, bg="#1e293b")
+        frame.pack(fill="x", padx=20, pady=10)
+
+        # Título
+        tk.Label(
+            frame,
+            text=titulo,
+            font=("Segoe UI", 14, "bold"),
+            fg="#38bdf8",
+            bg="#1e293b"
+        ).pack(anchor="w", padx=10, pady=(8, 4))
+
+        # Barra superior (buscador + botones en la misma línea)
+        top = tk.Frame(frame, bg="#1e293b")
+        top.pack(fill="x", padx=10, pady=(0, 5))
+
+        entry = tk.Entry(top, bg="#111827", fg="white", relief="flat")
+        entry.pack(side="left", fill="x", expand=True, ipady=4)
+
+        # Botones a la derecha (más compacto)
+        btn_frame = tk.Frame(top, bg="#1e293b")
+        btn_frame.pack(side="right")
+
+        def btn(txt, color):
+            return tk.Button(
+                btn_frame,
+                text=txt,
+                bg=color,
+                fg="white",
+                font=("Segoe UI", 9, "bold"),
+                relief="flat",
+                padx=6,
+                pady=3,
+                cursor="hand2"
+            )
+
+        def accion_add():
+            if tipo == "libro":
+                self.formulario_nuevo_libro("Libro")
+            elif tipo == "digital":
+                self.formulario_nuevo_libro("Digital")
+            elif tipo == "revista":
+                self.formulario_nuevo_libro("Revista")
+
+        tk.Button(
+            btn_frame,
+            text="➕",
+            bg="#22c55e",
+            fg="white",
+            command=accion_add,
+            font=("Segoe UI", 9, "bold"),
+            relief="flat",
+            padx=6,
+            pady=3,
+            cursor="hand2"
+        ).pack(side="left", padx=2)
+        btn("✏️", "#f59e0b").pack(side="left", padx=2)
+        btn("🗑️", "#ef4444").pack(side="left", padx=2)
+
+        # Tabla COMPACTA
+        tabla = ttk.Treeview(
+            frame,
+            columns=("ID", "Título", "Autor", "Categoría", "Disp"),
+            show="headings",
+            height=5
+        )
+
+        tabla.heading("ID", text="ID")
+        tabla.heading("Título", text="Título")
+        tabla.heading("Autor", text="Autor")
+        tabla.heading("Categoría", text="Categoría")
+        tabla.heading("Disp", text="✔")
+
+        tabla.column("ID", width=60, anchor="center")
+        tabla.column("Título", width=200)
+        tabla.column("Autor", width=140)
+        tabla.column("Categoría", width=120)
+        tabla.column("Disp", width=50, anchor="center")
+
+        tabla.pack(fill="x", padx=10, pady=(0, 10))
+
+        # Cargar datos
+        def cargar(filtro=""):
+            for i in tabla.get_children():
+                tabla.delete(i)
+
+            for m in self.service.obtener_materiales():
+                if m.to_dict()["tipo"] != tipo:
+                    continue
+
+                if filtro and filtro.lower() not in m._titulo.lower():
+                    continue
+
+                tabla.insert(
+                    "",
+                    "end",
+                    values=(
+                        m._id,
+                        m._titulo,
+                        m._autor,
+                        m._categoria,
+                        "✔" if m.esta_disponible() else "✖"
+                    )
+                )
+
+        entry.bind("<KeyRelease>", lambda e: cargar(entry.get()))
+        cargar()
+
+    def cargar_materiales(self, filtro=""):
+        for i in self.tabla_materiales.get_children():
+            self.tabla_materiales.delete(i)
+
+        if filtro:
+            materiales = self.service.buscar_materiales(self.criterio_busqueda.get(), filtro)
+        else:
+            materiales = self.service.obtener_materiales()
+
+        for m in materiales:
+            tipo = type(m).__name__
+
+            self.tabla_materiales.insert(
+                "",
+                "end",
+                values=(
+                    m._id,
+                    m._titulo,
+                    m._autor,
+                    m._categoria,
+                    "Sí" if m.esta_disponible() else "No",
+                    tipo
+                )
+            )
+
+    def formulario_nuevo_libro(self, tipo_preseleccionado="Libro"):
+        win = self.abrir_formulario("Nuevo Material")
+        win.configure(bg="#0f172a")
+
+        container = tk.Frame(win, bg="#0f172a")
+        container.pack(fill="both", expand=True, padx=10, pady=10)
+
+        main = self.crear_scrollable_frame(container)
+
+        # Tipo
+        tk.Label(main, text="Tipo de Material", fg="white", bg="#0f172a").pack(anchor="w")
+        var_tipo = tk.StringVar(value=tipo_preseleccionado)
+
+        tipo_cb = ttk.Combobox(
+            main,
+            textvariable=var_tipo,
+            values=["Libro", "Revista", "Digital"],
+            state="readonly"
+        )
+        tipo_cb.pack(fill="x", ipady=4, pady=(0, 10))
+
+        entries = {}
+        campos = ["ID", "Título", "Autor", "Categoría", "ISBN / URL / Edición"]
+
+        for campo in campos:
+            tk.Label(main, text=campo, fg="white", bg="#0f172a").pack(anchor="w", pady=(8, 2))
+            entry = tk.Entry(main, bg="#1f2937", fg="white", relief="flat")
+            entry.pack(fill="x", ipady=6)
+            entries[campo] = entry
+
+        def guardar():
+            from models.libro import Libro
+            from models.revista import Revista
+            from models.recurso_digital import RecursoDigital
+
+            t = var_tipo.get()
+            id_val = entries["ID"].get()
+            tit = entries["Título"].get()
+            aut = entries["Autor"].get()
+            cat = entries["Categoría"].get()
+            extra = entries["ISBN / URL / Edición"].get()
+
+            if t == "Libro":
+                material = Libro(id_val, tit, aut, cat, extra)
+            elif t == "Revista":
+                material = Revista(id_val, tit, aut, cat, extra)
+            else:
+                material = RecursoDigital(id_val, tit, aut, cat, extra)
+
+            self.service.agregar_material(material)
+            self.mostrar_materiales()  # 🔥 refresca todo correctamente
+            win.destroy()
+
+        tk.Button(
+            main,
+            text="Guardar",
+            bg="#22c55e",
+            fg="white",
+            command=guardar
+        ).pack(fill="x", pady=15)
+
+    def eliminar_material_seleccionado(self):
+        item = self.tabla_materiales.selection()
+        if not item:
+            return
+        
+        material_id = self.tabla_materiales.item(item)["values"][0]
+        if self.service.eliminar_material(material_id):
+            self.cargar_materiales()
+
+    def formulario_editar_libro(self):
+        item = self.tabla_materiales.selection()
+        if not item:
+            return
+        
+        valores = self.tabla_materiales.item(item)["values"]
+        material_id = valores[0]
+        
+        win = self.abrir_formulario("Editar Libro")
+        win.resizable(True, True)
+        
+        container = tk.Frame(win, bg="#0f172a")
+        container.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        main = self.crear_scrollable_frame(container)
+
+        entries = {}
+        campos = ["Título", "Autor", "Categoría"]
+        actuales = {"Título": valores[1], "Autor": valores[2], "Categoría": valores[3]}
+
+        for campo in campos:
+            tk.Label(main, text=campo, fg="white", bg="#0f172a").pack(anchor="w", pady=(8, 2))
+            entry = tk.Entry(main, bg="#1f2937", fg="white", relief="flat")
+            entry.insert(0, actuales[campo])
+            entry.pack(fill="x", ipady=6)
+            entries[campo] = entry
+
+        def guardar():
+            datos = {
+                "titulo": entries["Título"].get(),
+                "autor": entries["Autor"].get(),
+                "categoria": entries["Categoría"].get()
+            }
+            self.service.modificar_material(material_id, datos)
+            self.cargar_materiales()
+            win.destroy()
+
+        tk.Button(main, text="Guardar Cambios", bg="#f59e0b", fg="white", command=guardar).pack(fill="x", pady=20)
+
+    # =========================================================
+    # 6. MÓDULO PRESTAMOS Y DEVOLUCIONES
+    # =========================================================
+
+    def cargar_prestamos(self):
+        for i in self.tabla_prestamos.get_children():
+            self.tabla_prestamos.delete(i)
+
+        for p in self.service.prestamos:
+            estado = "Activo" if p.activo else "Devuelto"
+            if p.activo and p.esta_vencido():
+                estado = "VENCIDO"
+            
+            multa = f"{p.calcular_multa():.2f}€"
+            
+            self.tabla_prestamos.insert(
+                "",
+                "end",
+                values=(
+                    p.usuario._nombre,
+                    p.material._titulo,
+                    p.fecha_vencimiento.strftime("%d/%m/%Y"),
+                    estado,
+                    multa
+                )
+            )
+
+    def formulario_prestar(self):
+        win = self.abrir_formulario("Realizar Préstamo", alto=250)
+        main = tk.Frame(win, bg="#0f172a")
+        main.pack(fill="both", expand=True, padx=20, pady=20)
+
+        tk.Label(main, text="ID Usuario", fg="white", bg="#0f172a").pack(anchor="w")
+        u_id = tk.Entry(main, bg="#1f2937", fg="white")
+        u_id.pack(fill="x", ipady=6)
+
+        tk.Label(main, text="ID Material", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
+        m_id = tk.Entry(main, bg="#1f2937", fg="white")
+        m_id.pack(fill="x", ipady=6)
+
+        tk.Label(main, text="Días de préstamo", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
+        dias = tk.Entry(main, bg="#1f2937", fg="white")
+        dias.insert(0, "14")
+        dias.pack(fill="x", ipady=6)
+
+        def realizar():
+            try:
+                self.service.prestar_material(u_id.get(), m_id.get(), dias.get())
+                self.cargar_prestamos()
+                win.destroy()
+            except Exception as e:
+                from tkinter import messagebox
+                messagebox.showerror("Error", str(e))
+
+        tk.Button(main, text="Prestar", bg="#3b82f6", fg="white", command=realizar).pack(fill="x", pady=20)
+
+    def devolver_seleccionado(self):
+        item = self.tabla_prestamos.selection()
+        if not item:
+            return
+        
+        # Encontrar el préstamo correspondiente
+        idx = self.tabla_prestamos.index(item)
+        prestamo = self.service.prestamos[idx]
+        
+        if prestamo.activo:
+            self.service.devolver_material(prestamo.material._id)
+            self.cargar_prestamos()
+
+    # =========================================================
+    # 7. MÓDULO RESERVAS
+    # =========================================================
+
+    def mostrar_reservas(self):
+        self.limpiar_contenido()
+
+        tk.Label(
+            self.contenido,
+            text="📅 Reservas de Material",
+            font=("Segoe UI", 20, "bold"),
+            fg="white",
+            bg="#0f172a"
+        ).pack(pady=20)
+
+        frame_tabla = tk.Frame(self.contenido, bg="#0f172a")
+        frame_tabla.pack(fill="both", expand=True, padx=25, pady=15)
+
+        self.tabla_reservas = ttk.Treeview(
+            frame_tabla,
+            columns=("Usuario", "Material", "Fecha"),
+            show="headings",
+        )
+        self.tabla_reservas.pack(fill="both", expand=True)
+
+        for col in ("Usuario", "Material", "Fecha"):
+            self.tabla_reservas.heading(col, text=col)
+
+        self.cargar_reservas()
+
+        tk.Button(
+            self.contenido,
+            text="➕ Nueva Reserva",
+            bg="#3b82f6",
+            fg="white",
+            font=("Segoe UI", 11, "bold"),
+            relief="flat",
+            cursor="hand2",
+            command=self.formulario_reserva
+        ).pack(pady=10)
+
+    def cargar_reservas(self):
+        for i in self.tabla_reservas.get_children():
+            self.tabla_reservas.delete(i)
+
+        for r in self.service.obtener_reservas():
+            self.tabla_reservas.insert(
+                "",
+                "end",
+                values=(
+                    r.usuario._nombre,
+                    r.material._titulo,
+                    r.fecha.strftime("%d/%m/%Y")
+                )
+            )
+
+    def formulario_reserva(self):
+        win = self.abrir_formulario("Nueva Reserva", alto=250)
+        main = self.crear_scrollable_frame(win)
+
+        tk.Label(main, text="ID Usuario", fg="white", bg="#0f172a").pack(anchor="w")
+        u_id = tk.Entry(main, bg="#1f2937", fg="white")
+        u_id.pack(fill="x", ipady=6)
+
+        tk.Label(main, text="ID Material", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
+        m_id = tk.Entry(main, bg="#1f2937", fg="white")
+        m_id.pack(fill="x", ipady=6)
+
+        def realizar():
+            try:
+                self.service.reservar_material(u_id.get(), m_id.get())
+                self.cargar_reservas()
+                win.destroy()
+            except Exception as e:
+                from tkinter import messagebox
+                messagebox.showerror("Error", str(e))
+
+        tk.Button(main, text="Reservar", bg="#3b82f6", fg="white", command=realizar).pack(fill="x", pady=20)
+
+    # =========================================================
+    # 8. MÓDULO INFORMES
     # =========================================================
 
     def mostrar_informes(self):
@@ -849,10 +895,10 @@ class BibliotecaApp:
         usuarios = self.service.obtener_usuarios()
 
         stats = [
+            (f"👤 Total Usuarios: {len(usuarios)}", "#22c55e"),
             (f"📚 Total Materiales: {len(materiales)}", "#3b82f6"),
             (f"🤝 Préstamos Activos: {len(prestados)}", "#f59e0b"),
-            (f"⚠️ Préstamos Vencidos: {len(vencidos)}", "#ef4444"),
-            (f"👤 Total Usuarios: {len(usuarios)}", "#22c55e")
+            (f"⚠️ Préstamos Vencidos: {len(vencidos)}", "#ef4444")
         ]
 
         for texto, color in stats:

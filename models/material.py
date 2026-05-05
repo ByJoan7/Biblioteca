@@ -1,33 +1,31 @@
 class Material:
-    def __init__(self, idLib, titulo, autor, categoria, disponible=True):
-        self._id = idLib
+    def __init__(self, id, titulo, autor, categoria, disponible=True):
+        self._id = id
         self._titulo = titulo
         self._autor = autor
         self._categoria = categoria
         self._disponible = disponible
+        self._veces_prestado = 0
 
     def prestar(self):
         if self._disponible:
             self._disponible = False
+            self._veces_prestado += 1
         else:
-            return "Material no disponible para prestar."
+            raise Exception("Material no disponible")
 
     def devolver(self):
-        if not self._disponible:
-            self._disponible = True
-        else:           
-            return "Material ya está disponible."
+        self._disponible = True
 
-    def desc_lib(self):
-        if self._disponible:
-            estado = "Disponible"
-        else:            
-            estado = "No disponible"
+    def esta_disponible(self):
+        return self._disponible
+
+    def to_dict(self):
         return {
             "id": self._id,
             "titulo": self._titulo,
             "autor": self._autor,
             "categoria": self._categoria,
-            "disponible": self._disponible
+            "disponible": self._disponible,
+            "veces_prestado": self._veces_prestado
         }
-    
