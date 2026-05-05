@@ -5,12 +5,14 @@ class Material:
         self._autor = autor
         self._categoria = categoria
         self._disponible = True
+        self._veces_prestado = 0
 
     def esta_disponible(self):
         return self._disponible
 
     def prestar(self):
         self._disponible = False
+        self._veces_prestado += 1
 
     def devolver(self):
         self._disponible = True
@@ -21,5 +23,5 @@ class Material:
             "titulo": self._titulo,
             "autor": self._autor,
             "categoria": self._categoria,
-            "disponible": self._disponible
+            "disponible": self._disponible, "veces_prestado": self._veces_prestado
         }
