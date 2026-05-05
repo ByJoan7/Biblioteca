@@ -21,8 +21,8 @@ class Usuario:
             "sancionado": self._sancionado
         }
     def buscar_por_nombre(usuarios, nombre):
-    resultado = []
-    for usuario in usuarios:
-        if nombre.lower() in usuario._nombre.lower():
-            resultado.append(usuario)
-    return resultado
+        resultado = []
+        for usuario in usuarios:
+            if nombre.lower() in usuario._nombre.lower():
+                resultado.append(usuario)
+        return resultado
