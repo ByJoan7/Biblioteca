@@ -1,8 +1,7 @@
 class Usuario:
-    def __init__(self, id, nombre, tipo):
+    def __init__(self, id, nombre):
         self._id = id
         self._nombre = nombre
-        self._tipo = tipo
         self._sancionado = False
         self._prestamos_activos = 0
 
@@ -19,6 +18,5 @@ class Usuario:
         return {
             "id": self._id,
             "nombre": self._nombre,
-            "tipo": self._tipo,
             "sancionado": self._sancionado
         }
