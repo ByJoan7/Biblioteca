@@ -299,6 +299,14 @@ class BibliotecaApp:
     def mostrar_materiales(self):
         self.limpiar_contenido()
 
+        tk.Label(
+            self.contenido,
+            text="👤 Gestión de Materiales",
+            font=("Segoe UI", 20, "bold"),
+            fg="white",
+            bg="#0f172a"
+        ).pack(pady=20)
+
         # Barra de búsqueda
         frame_busqueda = tk.Frame(self.contenido, bg="#0f172a")
         frame_busqueda.pack(fill="x", padx=25, pady=(0, 10))
@@ -816,3 +824,39 @@ class BibliotecaApp:
             cursor="hand2"
         )
         btn.pack(fill="x", pady=(15, 0))
+
+    # =========================================================
+    # 6. MÓDULO INFORMES
+    # =========================================================
+
+    def mostrar_informes(self):
+        self.limpiar_contenido()
+
+        tk.Label(
+            self.contenido,
+            text="📊 Informes del Sistema",
+            font=("Segoe UI", 20, "bold"),
+            fg="white",
+            bg="#0f172a"
+        ).pack(pady=20)
+
+        frame_info = tk.Frame(self.contenido, bg="#0f172a")
+        frame_info.pack(fill="both", expand=True, padx=40)
+
+        materiales = self.service.obtener_materiales()
+        prestados = [m for m in materiales if not m.esta_disponible()]
+        vencidos = [p for p in self.service.prestamos if p.activo and p.esta_vencido()]
+        usuarios = self.service.obtener_usuarios()
+
+        stats = [
+            (f"📚 Total Materiales: {len(materiales)}", "#3b82f6"),
+            (f"🤝 Préstamos Activos: {len(prestados)}", "#f59e0b"),
+            (f"⚠️ Préstamos Vencidos: {len(vencidos)}", "#ef4444"),
+            (f"👤 Total Usuarios: {len(usuarios)}", "#22c55e")
+        ]
+
+        for texto, color in stats:
+            f = tk.Frame(frame_info, bg="#1e293b", padx=20, pady=20)
+            f.pack(fill="x", pady=10)
+            tk.Label(f, text=texto, fg=color, bg="#1e293b",
+                    font=("Segoe UI", 14, "bold")).pack(side="left")
