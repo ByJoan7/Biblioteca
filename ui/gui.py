@@ -540,13 +540,23 @@ class BibliotecaApp:
         btn("✏️", "#f59e0b").pack(side="left", padx=2)
         btn("🗑️", "#ef4444").pack(side="left", padx=2)
 
-        # Tabla COMPACTA
+        # Columnas según tipo
+        if tipo == "libro":
+            columnas = ("ID", "Título", "Autor", "Categoría", "ISBN", "Disp")
+        elif tipo == "digital":
+            columnas = ("ID", "Título", "Autor", "Categoría", "URL", "Disp")
+        elif tipo == "revista":
+            columnas = ("ID", "Título", "Autor", "Categoría", "Edición", "Disp")
+
         tabla = ttk.Treeview(
             frame,
-            columns=("ID", "Título", "Autor", "Categoría", "Disp"),
+            columns=columnas,
             show="headings",
             height=5
         )
+
+        for col in columnas:
+            tabla.heading(col, text=col)
 
         tabla.heading("ID", text="ID")
         tabla.heading("Título", text="Título")
@@ -555,9 +565,17 @@ class BibliotecaApp:
         tabla.heading("Disp", text="✔")
 
         tabla.column("ID", width=60, anchor="center")
-        tabla.column("Título", width=200)
-        tabla.column("Autor", width=140)
-        tabla.column("Categoría", width=120)
+        tabla.column("Título", width=180)
+        tabla.column("Autor", width=120)
+        tabla.column("Categoría", width=100)
+
+        if tipo == "libro":
+            tabla.column("ISBN", width=120)
+        elif tipo == "digital":
+            tabla.column("URL", width=180)
+        elif tipo == "revista":
+            tabla.column("Edición", width=80)
+
         tabla.column("Disp", width=50, anchor="center")
 
         tabla.pack(fill="x", padx=10, pady=(0, 10))
@@ -574,6 +592,14 @@ class BibliotecaApp:
                 if filtro and filtro.lower() not in m._titulo.lower():
                     continue
 
+                # Obtener atributo extra según tipo
+                if tipo == "libro":
+                    extra = getattr(m, "_isbn", "")
+                elif tipo == "digital":
+                    extra = getattr(m, "_url", "")
+                elif tipo == "revista":
+                    extra = getattr(m, "_numero_edicion", "")
+
                 tabla.insert(
                     "",
                     "end",
@@ -582,6 +608,7 @@ class BibliotecaApp:
                         m._titulo,
                         m._autor,
                         m._categoria,
+                        extra,
                         "✔" if m.esta_disponible() else "✖"
                     )
                 )
