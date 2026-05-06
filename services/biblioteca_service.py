@@ -5,6 +5,8 @@ from models.usuario import Usuario
 from models.revista import Revista
 from models.recurso_digital import RecursoDigital
 from models.reserva import Reserva
+from services.prestamo_service import PrestamoService
+from services.reserva_service import ReservaService
 
 
 class BibliotecaService:
@@ -26,6 +28,21 @@ class BibliotecaService:
         self.storage_reservas = JSONStorage("data/reservas.json")
 
         self.cargar_datos()
+
+        self.prestamo_service = PrestamoService(
+            self.materiales,
+            self.usuarios,
+            self.prestamos,
+            self.storage_prestamos,
+            self.storage_materiales
+        )
+
+        self.reserva_service = ReservaService(
+            self.materiales,
+            self.usuarios,
+            self.reservas,
+            self.storage_reservas
+        )
 
     # =========================================================
     # 2. API PÚBLICA - MATERIALES
@@ -100,40 +117,11 @@ class BibliotecaService:
     # 4. API PÚBLICA - PRÉSTAMOS
     # =========================================================
 
-    def prestar_material(self, usuario_id, material_id, dias=14):
-        usuario = self.usuarios.get(usuario_id)
-        material = self.materiales.get(material_id)
+    def prestar_material(self, *args, **kwargs):
+        return self.prestamo_service.prestar_material(*args, **kwargs)
 
-        if not usuario or not material:
-            raise Exception("Usuario o material no existe")
-
-        if usuario.esta_sancionado():
-            raise Exception("Usuario sancionado")
-
-        if not material.esta_disponible():
-            raise Exception("Material no disponible")
-
-        material.prestar()
-
-        prestamo = Prestamo(usuario, material, dias_prestamo=int(dias))
-        self.prestamos.append(prestamo)
-
-        self.guardar_prestamos()
-        self.guardar_materiales()
-
-        return prestamo
-
-    def devolver_material(self, material_id):
-        for p in self.prestamos:
-            if p.material._id == material_id and p.activo:
-                p.devolver()
-                p.material.devolver()
-
-                self.guardar_prestamos()
-                self.guardar_materiales()
-                return
-
-        raise Exception("Préstamo no encontrado")
+    def devolver_material(self, *args, **kwargs):
+        return self.prestamo_service.devolver_material(*args, **kwargs)
 
     # =========================================================
     # 5. PERSISTENCIA (GUARDAR)
@@ -159,20 +147,11 @@ class BibliotecaService:
     # 5. API PÚBLICA - RESERVAS
     # =========================================================
 
-    def reservar_material(self, usuario_id, material_id):
-        usuario = self.usuarios.get(usuario_id)
-        material = self.materiales.get(material_id)
-
-        if not usuario or not material:
-            raise Exception("Usuario o material no existe")
-
-        reserva = Reserva(usuario, material)
-        self.reservas.append(reserva)
-        self.guardar_reservas()
-        return reserva
+    def reservar_material(self, *args, **kwargs):
+        return self.reserva_service.reservar_material(*args, **kwargs)
 
     def obtener_reservas(self):
-        return self.reservas
+        return self.reserva_service.obtener_reservas()
 
     # =========================================================
     # 6. CARGA DE DATOS
