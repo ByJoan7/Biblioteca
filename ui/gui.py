@@ -434,7 +434,7 @@ class BibliotecaApp:
         if not item:
             return
         u_id = self.tabla_usuarios.item(item)["values"][0]
-        if self.service.eliminar_usuario(u_id):
+        if self.service.eliminar_usuario(str(u_id)):
             self.cargar_usuarios()
 
     def formulario_editar_usuario(self):
@@ -442,7 +442,7 @@ class BibliotecaApp:
         if not item:
             return
         valores = self.tabla_usuarios.item(item)["values"]
-        u_id = valores[0]
+        u_id = str(valores[0])
 
         win = self.abrir_formulario("Editar Usuario", alto=200)
         main = self.crear_scrollable_frame(win)
@@ -537,8 +537,10 @@ class BibliotecaApp:
             pady=3,
             cursor="hand2"
         ).pack(side="left", padx=2)
-        btn("✏️", "#f59e0b").pack(side="left", padx=2)
-        btn("🗑️", "#ef4444").pack(side="left", padx=2)
+        btn_edit = btn("✏️", "#f59e0b")
+        btn_edit.pack(side="left", padx=2)
+        btn_delete = btn("🗑️", "#ef4444")
+        btn_delete.pack(side="left", padx=2)
 
         # Columnas según tipo
         if tipo == "libro":
@@ -579,6 +581,24 @@ class BibliotecaApp:
         tabla.column("Disp", width=50, anchor="center")
 
         tabla.pack(fill="x", padx=10, pady=(0, 10))
+
+        def accion_delete():
+            item = tabla.selection()
+            if not item:
+                return
+            m_id = str(tabla.item(item)["values"][0])
+            if self.service.eliminar_material(m_id):
+                cargar(entry.get())
+
+        def accion_edit():
+            item = tabla.selection()
+            if not item:
+                return
+            valores = tabla.item(item)["values"]
+            self.formulario_editar_material_seccion(valores, tipo, lambda: cargar(entry.get()))
+
+        btn_delete.config(command=accion_delete)
+        btn_edit.config(command=accion_edit)
 
         # Cargar datos
         def cargar(filtro=""):
@@ -702,24 +722,10 @@ class BibliotecaApp:
             command=guardar
         ).pack(fill="x", pady=15)
 
-    def eliminar_material_seleccionado(self):
-        item = self.tabla_materiales.selection()
-        if not item:
-            return
+    def formulario_editar_material_seccion(self, valores, tipo, callback_cargar):
+        material_id = str(valores[0])
         
-        material_id = self.tabla_materiales.item(item)["values"][0]
-        if self.service.eliminar_material(material_id):
-            self.cargar_materiales()
-
-    def formulario_editar_libro(self):
-        item = self.tabla_materiales.selection()
-        if not item:
-            return
-        
-        valores = self.tabla_materiales.item(item)["values"]
-        material_id = valores[0]
-        
-        win = self.abrir_formulario("Editar Libro")
+        win = self.abrir_formulario(f"Editar {tipo.capitalize()}")
         win.resizable(True, True)
         
         container = tk.Frame(win, bg="#0f172a")
@@ -730,6 +736,16 @@ class BibliotecaApp:
         entries = {}
         campos = ["Título", "Autor", "Categoría"]
         actuales = {"Título": valores[1], "Autor": valores[2], "Categoría": valores[3]}
+        
+        if tipo == "libro":
+            campos.append("ISBN")
+            actuales["ISBN"] = valores[4]
+        elif tipo == "digital":
+            campos.append("URL")
+            actuales["URL"] = valores[4]
+        elif tipo == "revista":
+            campos.append("Edición")
+            actuales["Edición"] = valores[4]
 
         for campo in campos:
             tk.Label(main, text=campo, fg="white", bg="#0f172a").pack(anchor="w", pady=(8, 2))
@@ -744,8 +760,18 @@ class BibliotecaApp:
                 "autor": entries["Autor"].get(),
                 "categoria": entries["Categoría"].get()
             }
+            if "ISBN" in entries:
+                datos["isbn"] = entries["ISBN"].get()
+            if "URL" in entries:
+                datos["url"] = entries["URL"].get()
+            if "Edición" in entries:
+                try:
+                    datos["numero_edicion"] = int(entries["Edición"].get())
+                except ValueError:
+                    datos["numero_edicion"] = entries["Edición"].get()
+                
             self.service.modificar_material(material_id, datos)
-            self.cargar_materiales()
+            callback_cargar()
             win.destroy()
 
         tk.Button(main, text="Guardar Cambios", bg="#f59e0b", fg="white", command=guardar).pack(fill="x", pady=20)

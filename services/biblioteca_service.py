@@ -67,6 +67,10 @@ class BibliotecaService:
             material._categoria = nuevos_datos.get("categoria", material._categoria)
             if hasattr(material, "_isbn"):
                 material._isbn = nuevos_datos.get("isbn", material._isbn)
+            if hasattr(material, "_url"):
+                material._url = nuevos_datos.get("url", material._url)
+            if hasattr(material, "_numero_edicion"):
+                material._numero_edicion = nuevos_datos.get("numero_edicion", material._numero_edicion)
             
             self.guardar_materiales()
             return True
