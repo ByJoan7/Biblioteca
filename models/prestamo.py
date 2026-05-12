@@ -21,10 +21,17 @@ class Prestamo:
     def calcular_multa(self):
         if not self.esta_vencido():
             return 0
-        
         fecha_final = self.fecha_devolucion if not self.activo else datetime.now()
         dias_retraso = (fecha_final - self.fecha_vencimiento).days
-        return max(0, dias_retraso * 2.0)  # 2 euros por día de retraso
+        return max(0, dias_retraso * 2.0)
+
+    def descripcion_corta(self):
+        estado = "ACTIVO" if self.activo else "DEVUELTO"
+        multa = self.calcular_multa()
+        texto = f"Usuario: {self.usuario._nombre} | Material: {self.material._titulo} | Vence: {self.fecha_vencimiento.strftime('%d/%m/%Y')} | {estado}"
+        if multa > 0:
+            texto += f" | Multa: {multa:.2f} euros"
+        return texto
 
     def to_dict(self):
         return {
