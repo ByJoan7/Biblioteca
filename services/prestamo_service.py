@@ -1,6 +1,5 @@
 from models.prestamo import Prestamo
 
-
 class PrestamoService:
 
     def __init__(self, materiales, usuarios, prestamos, storage_prestamos, storage_materiales):
@@ -39,7 +38,7 @@ class PrestamoService:
                 self.guardar()
                 return
 
-        raise Exception("Préstamo no encontrado")
+        raise Exception("Prestamo no encontrado")
 
     def guardar(self):
         data = [p.to_dict() for p in self.prestamos]
