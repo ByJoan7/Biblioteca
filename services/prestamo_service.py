@@ -1,4 +1,5 @@
 from models.prestamo import Prestamo
+from utils.excepciones import UsuarioSancionadoError, MaterialNoDisponibleError
 
 
 class PrestamoService:
@@ -16,15 +17,12 @@ class PrestamoService:
 
         if not usuario:
             raise Exception("El usuario no existe")
-
         if not material:
             raise Exception("El material no existe")
-
         if usuario.esta_sancionado():
-            raise Exception("El usuario esta sancionado y no puede hacer prestamos")
-
+            raise UsuarioSancionadoError("El usuario esta sancionado y no puede hacer prestamos")
         if not material.esta_disponible():
-            raise Exception("El material no esta disponible")
+            raise MaterialNoDisponibleError("El material no esta disponible")
 
         material.prestar()
 
@@ -45,15 +43,11 @@ class PrestamoService:
             if p.material._id == material_id and p.activo:
                 p.devolver()
                 p.material.devolver()
-
                 if p.esta_vencido():
                     p.usuario.sancionar()
-
                 self._guardar_prestamos()
                 self._guardar_materiales()
-
                 return p
-
         raise Exception("No hay un prestamo activo para ese material")
 
     def _guardar_prestamos(self):
