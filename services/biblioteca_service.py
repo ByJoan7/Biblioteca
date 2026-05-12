@@ -10,11 +10,7 @@ from services.reserva_service import ReservaService
 
 
 class BibliotecaService:
-
-    # =========================================================
-    # 1. INICIALIZACIÓN
-    # =========================================================
-
+    
     def __init__(self):
         self.materiales = {}
         self.usuarios = {}
@@ -26,9 +22,7 @@ class BibliotecaService:
         self.storage_usuarios = JSONStorage("data/usuarios.json")
         self.storage_prestamos = JSONStorage("data/prestamos.json")
         self.storage_reservas = JSONStorage("data/reservas.json")
-
         self.cargar_datos()
-
         self.prestamo_service = PrestamoService(
             self.materiales,
             self.usuarios,
@@ -36,17 +30,12 @@ class BibliotecaService:
             self.storage_prestamos,
             self.storage_materiales
         )
-
         self.reserva_service = ReservaService(
             self.materiales,
             self.usuarios,
             self.reservas,
             self.storage_reservas
         )
-
-    # =========================================================
-    # 2. API PÚBLICA - MATERIALES
-    # =========================================================
 
     def agregar_material(self, material):
         self.materiales[material._id] = material
@@ -90,11 +79,7 @@ class BibliotecaService:
 
     def obtener_materiales(self):
         return list(self.materiales.values())
-
-    # =========================================================
-    # 3. API PÚBLICA - USUARIOS
-    # =========================================================
-
+        
     def agregar_usuario(self, usuario):
         self.usuarios[usuario._id] = usuario
         self.guardar_usuarios()
@@ -117,20 +102,12 @@ class BibliotecaService:
     def obtener_usuarios(self):
         return list(self.usuarios.values())
 
-    # =========================================================
-    # 4. API PÚBLICA - PRÉSTAMOS
-    # =========================================================
-
     def prestar_material(self, *args, **kwargs):
         return self.prestamo_service.prestar_material(*args, **kwargs)
 
     def devolver_material(self, *args, **kwargs):
         return self.prestamo_service.devolver_material(*args, **kwargs)
-
-    # =========================================================
-    # 5. PERSISTENCIA (GUARDAR)
-    # =========================================================
-
+        
     def guardar_materiales(self):
         data = [m.to_dict() for m in self.materiales.values()]
         self.storage_materiales.guardar(data)
@@ -147,19 +124,11 @@ class BibliotecaService:
         data = [r.to_dict() for r in self.reservas]
         self.storage_reservas.guardar(data)
 
-    # =========================================================
-    # 5. API PÚBLICA - RESERVAS
-    # =========================================================
-
     def reservar_material(self, *args, **kwargs):
         return self.reserva_service.reservar_material(*args, **kwargs)
 
     def obtener_reservas(self):
         return self.reserva_service.obtener_reservas()
-
-    # =========================================================
-    # 6. CARGA DE DATOS
-    # =========================================================
 
     def cargar_datos(self):
         self._cargar_materiales()
@@ -167,7 +136,6 @@ class BibliotecaService:
         self._cargar_prestamos()
         self._cargar_reservas()
 
-    # ----------------- PRIVADO: MATERIALES -----------------
     def _cargar_materiales(self):
         data = self.storage_materiales.cargar()
 
@@ -198,7 +166,6 @@ class BibliotecaService:
 
             self.materiales[m["id"]] = material
 
-    # ----------------- PRIVADO: USUARIOS -----------------
     def _cargar_usuarios(self):
         data = self.storage_usuarios.cargar()
 
@@ -213,7 +180,6 @@ class BibliotecaService:
 
             self.usuarios[u["id"]] = usuario
 
-    # ----------------- PRIVADO: PRÉSTAMOS -----------------
     def _cargar_prestamos(self):
         data = self.storage_prestamos.cargar()
         from datetime import datetime
@@ -234,6 +200,7 @@ class BibliotecaService:
                     prestamo.fecha_devolucion = datetime.fromisoformat(p["fecha_devolucion"])
                 
                 self.prestamos.append(prestamo)
+                
     def _cargar_reservas(self):
         data = self.storage_reservas.cargar()
         for r in data:
