@@ -26,10 +26,6 @@ class PrestamoService:
 
         material.prestar()
 
-        if not hasattr(material, "_veces_prestado"):
-            material._veces_prestado = 0
-        material._veces_prestado += 1
-
         prestamo = Prestamo(usuario, material, dias_prestamo=dias)
         self.prestamos.append(prestamo)
 

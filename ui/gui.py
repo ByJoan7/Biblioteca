@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import random
 
 
 class BibliotecaApp:
@@ -338,6 +339,17 @@ class BibliotecaApp:
                 )
             )
 
+    def generar_id_usuario(self):
+        ids_existentes = {
+            str(usuario._id)
+            for usuario in self.service.obtener_usuarios()
+        }
+        while True:
+            nuevo_id = str(random.randint(1, 9999))
+
+            if nuevo_id not in ids_existentes:
+                return nuevo_id
+
     def formulario_usuario(self):
         win = self.abrir_formulario("Nuevo Usuario")
         win.configure(bg="#0f172a")
@@ -348,7 +360,7 @@ class BibliotecaApp:
         main = self.crear_scrollable_frame(container)
 
         entries = {}
-        campos = ["ID", "Nombre"]
+        campos = ["Nombre"]
 
         for campo in campos:
             tk.Label(
@@ -373,8 +385,10 @@ class BibliotecaApp:
         def guardar():
             from models.usuario import Usuario
 
+            nuevo_id = self.generar_id_usuario()
+
             usuario = Usuario(
-                entries["ID"].get(),
+                nuevo_id,
                 entries["Nombre"].get()
             )
 
@@ -628,6 +642,18 @@ class BibliotecaApp:
                 )
             )
 
+    def generar_id_material(self):
+        ids_existentes = {
+            str(material._id)
+            for material in self.service.obtener_materiales()
+        }
+
+        while True:
+            nuevo_id = str(random.randint(1, 9999))
+
+            if nuevo_id not in ids_existentes:
+                return nuevo_id
+
     def formulario_nuevo_libro(self, tipo_preseleccionado="Libro"):
         win = self.abrir_formulario("Nuevo Material")
         win.configure(bg="#0f172a")
@@ -650,7 +676,7 @@ class BibliotecaApp:
         tipo_cb.pack(fill="x", ipady=4, pady=(0, 10))
 
         entries = {}
-        campos = ["ID", "Título", "Autor", "Categoría", "ISBN / URL / Edición"]
+        campos = ["Título", "Autor", "Categoría", "ISBN / URL / Edición"]
 
         for campo in campos:
             tk.Label(main, text=campo, fg="white", bg="#0f172a").pack(anchor="w", pady=(8, 2))
@@ -664,7 +690,7 @@ class BibliotecaApp:
             from models.recurso_digital import RecursoDigital
 
             t = var_tipo.get()
-            id_val = entries["ID"].get()
+            id_val = self.generar_id_material()
             tit = entries["Título"].get()
             aut = entries["Autor"].get()
             cat = entries["Categoría"].get()
@@ -678,7 +704,7 @@ class BibliotecaApp:
                 material = RecursoDigital(id_val, tit, aut, cat, extra)
 
             self.service.agregar_material(material)
-            self.mostrar_materiales()  # 🔥 refresca todo correctamente
+            self.mostrar_materiales()  
             win.destroy()
 
         tk.Button(
@@ -771,33 +797,148 @@ class BibliotecaApp:
             )
 
     def formulario_prestar(self):
-        win = self.abrir_formulario("Realizar Préstamo", alto=250)
-        main = tk.Frame(win, bg="#0f172a")
-        main.pack(fill="both", expand=True, padx=20, pady=20)
+        win = self.abrir_formulario("Realizar Préstamo", alto=400)
 
-        tk.Label(main, text="ID Usuario", fg="white", bg="#0f172a").pack(anchor="w")
-        u_id = tk.Entry(main, bg="#1f2937", fg="white")
-        u_id.pack(fill="x", ipady=6)
+        container = tk.Frame(win, bg="#0f172a")
+        container.pack(fill="both", expand=True, padx=20, pady=20)
 
-        tk.Label(main, text="ID Material", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
-        m_id = tk.Entry(main, bg="#1f2937", fg="white")
-        m_id.pack(fill="x", ipady=6)
+        main = self.crear_scrollable_frame(container)
 
-        tk.Label(main, text="Días de préstamo", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
-        dias = tk.Entry(main, bg="#1f2937", fg="white")
+        # Desplegable donde ver los usuarios a los que poder prestar
+
+        tk.Label(
+            main,
+            text="Usuario",
+            fg="white",
+            bg="#0f172a"
+        ).pack(anchor="w")
+
+        usuarios = self.service.obtener_usuarios()
+
+        usuarios_dict = {
+            f"{u._id} - {u._nombre}": u._id
+            for u in usuarios
+        }
+
+        usuario_var = tk.StringVar()
+
+        usuario_combo = ttk.Combobox(
+            main,
+            textvariable=usuario_var,
+            values=list(usuarios_dict.keys()),
+            state="readonly"
+        )
+
+        usuario_combo.pack(fill="x", ipady=5)
+
+        # Desplegable donde ver los libros que se pueden prestar
+
+        tk.Label(
+            main,
+            text="Material",
+            fg="white",
+            bg="#0f172a"
+        ).pack(anchor="w", pady=(15, 0))
+
+        materiales = [
+            m for m in self.service.obtener_materiales()
+            if m.esta_disponible()
+        ]
+
+        materiales_dict = {}
+
+        for m in materiales:
+
+            # Libro
+            if hasattr(m, "_isbn"):
+                texto = f"{m._id} - ISBN: {m._isbn}"
+
+            # Revista
+            elif hasattr(m, "_numero_edicion"):
+                texto = f"{m._id} - Edición: {m._numero_edicion}"
+
+            # Digital
+            elif hasattr(m, "_url"):
+                texto = f"{m._id} - URL"
+
+            else:
+                texto = f"{m._id}"
+
+            materiales_dict[texto] = m._id
+
+        material_var = tk.StringVar()
+
+        material_combo = ttk.Combobox(
+            main,
+            textvariable=material_var,
+            values=list(materiales_dict.keys()),
+            state="readonly"
+        )
+
+        material_combo.pack(fill="x", ipady=5)
+
+        # Días que se presta el libro
+
+        tk.Label(
+            main,
+            text="Días de préstamo",
+            fg="white",
+            bg="#0f172a"
+        ).pack(anchor="w", pady=(15, 0))
+
+        dias = tk.Entry(
+            main,
+            bg="#1f2937",
+            fg="white"
+        )
+
         dias.insert(0, "14")
         dias.pack(fill="x", ipady=6)
 
+        # =========================
+        # PRESTAR
+        # =========================
+
         def realizar():
             try:
-                self.service.prestar_material(u_id.get(), m_id.get(), dias.get())
+
+                usuario_texto = usuario_var.get()
+                material_texto = material_var.get()
+
+                if not usuario_texto:
+                    raise Exception("Selecciona un usuario")
+
+                if not material_texto:
+                    raise Exception("Selecciona un material")
+
+                usuario_id = usuarios_dict[usuario_texto]
+                material_id = materiales_dict[material_texto]
+
+                self.service.prestar_material(
+                    str(usuario_id),
+                    str(material_id),
+                    int(dias.get())
+                )
+
                 self.cargar_prestamos()
+                self.mostrar_materiales()
+
                 win.destroy()
+
             except Exception as e:
                 from tkinter import messagebox
                 messagebox.showerror("Error", str(e))
 
-        tk.Button(main, text="Prestar", bg="#3b82f6", fg="white", command=realizar).pack(fill="x", pady=20)
+        tk.Button(
+            main,
+            text="Prestar",
+            bg="#3b82f6",
+            fg="white",
+            font=("Segoe UI", 11, "bold"),
+            relief="flat",
+            cursor="hand2",
+            command=realizar
+        ).pack(fill="x", pady=20)
 
     def devolver_seleccionado(self):
         item = self.tabla_prestamos.selection()
@@ -916,10 +1057,10 @@ class BibliotecaApp:
         usuarios = self.service.obtener_usuarios()
 
         stats = [
+            (f"👤 Total Usuarios: {len(usuarios)}", "#22c55e"),
             (f"📚 Total Materiales: {len(materiales)}", "#3b82f6"),
             (f"🤝 Préstamos Activos: {len(prestados)}", "#f59e0b"),
-            (f"⚠️ Préstamos Vencidos: {len(vencidos)}", "#ef4444"),
-            (f"👤 Total Usuarios: {len(usuarios)}", "#22c55e")
+            (f"⚠️ Préstamos Vencidos: {len(vencidos)}", "#ef4444")
         ]
 
         if materiales:

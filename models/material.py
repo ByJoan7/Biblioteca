@@ -5,10 +5,12 @@ class Material:
         self._autor = autor
         self._categoria = categoria
         self._disponible = bool(disponible)
+        self._veces_prestado = 0
 
     def prestar(self):
         if self._disponible:
             self._disponible = False
+            self._veces_prestado += 1
             return True
         return False
 
@@ -34,5 +36,6 @@ class Material:
             "titulo": self._titulo,
             "autor": self._autor,
             "categoria": self._categoria,
-            "disponible": self._disponible
+            "disponible": self._disponible,
+            "veces_prestado": self._veces_prestado
         }
