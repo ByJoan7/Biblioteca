@@ -1,5 +1,6 @@
 from models.prestamo import Prestamo
 
+
 class PrestamoService:
 
     def __init__(self, materiales, usuarios, prestamos, storage_prestamos, storage_materiales):
@@ -13,21 +14,30 @@ class PrestamoService:
         usuario = self.usuarios.get(usuario_id)
         material = self.materiales.get(material_id)
 
-        if not usuario or not material:
-            raise Exception("Usuario o material no existe")
+        if not usuario:
+            raise Exception("El usuario no existe")
+
+        if not material:
+            raise Exception("El material no existe")
 
         if usuario.esta_sancionado():
-            raise Exception("Usuario sancionado")
+            raise Exception("El usuario esta sancionado y no puede hacer prestamos")
 
         if not material.esta_disponible():
-            raise Exception("Material no disponible")
+            raise Exception("El material no esta disponible")
 
         material.prestar()
 
-        prestamo = Prestamo(usuario, material, dias_prestamo=int(dias))
+        if not hasattr(material, "_veces_prestado"):
+            material._veces_prestado = 0
+        material._veces_prestado += 1
+
+        prestamo = Prestamo(usuario, material, dias_prestamo=dias)
         self.prestamos.append(prestamo)
 
-        self.guardar()
+        self._guardar_prestamos()
+        self._guardar_materiales()
+
         return prestamo
 
     def devolver_material(self, material_id):
@@ -35,14 +45,25 @@ class PrestamoService:
             if p.material._id == material_id and p.activo:
                 p.devolver()
                 p.material.devolver()
-                self.guardar()
-                return
 
-        raise Exception("Prestamo no encontrado")
+                if p.esta_vencido():
+                    p.usuario.sancionar()
 
-    def guardar(self):
-        data = [p.to_dict() for p in self.prestamos]
+                self._guardar_prestamos()
+                self._guardar_materiales()
+
+                return p
+
+        raise Exception("No hay un prestamo activo para ese material")
+
+    def _guardar_prestamos(self):
+        data = []
+        for p in self.prestamos:
+            data.append(p.to_dict())
         self.storage_prestamos.guardar(data)
 
-        data_mat = [m.to_dict() for m in self.materiales.values()]
-        self.storage_materiales.guardar(data_mat)
+    def _guardar_materiales(self):
+        data = []
+        for m in self.materiales.values():
+            data.append(m.to_dict())
+        self.storage_materiales.guardar(data)
