@@ -213,9 +213,7 @@ def menu_prestamos(service):
                 print("No hay prestamos activos.")
             else:
                 for p in activos:
-                    estado = "ACTIVO" if p.activo else "DEVUELTO"
-                    multa = p.calcular_multa()
-                    print(f"Usuario: {p.usuario._nombre} | Material: {p.material._titulo} | Vence: {p.fecha_vencimiento.strftime('%d/%m/%Y')} | Estado: {estado} | Multa: {multa}€")
+                    print(p.descripcion_corta())
 
         elif opcion == "2":
             uid = input("ID Usuario: ")
@@ -316,7 +314,7 @@ def menu_informes(service):
             items = service.informe_prestamos_vencidos()
             print(f"\nPrestamos vencidos ({len(items)}):")
             for p in items:
-                print(f"Usuario: {p.usuario._nombre} | Material: {p.material._titulo} | Multa: {p.calcular_multa():.2f} euros")
+                print(p.descripcion_corta())
 
         elif opcion == "4":
             items = service.informe_usuarios_sancionados()
