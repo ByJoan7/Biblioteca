@@ -17,7 +17,6 @@ class BibliotecaService:
         self.prestamos = []
         self.reservas = []
 
-        # Storage
         self.storage_materiales = JSONStorage("data/materiales.json")
         self.storage_usuarios = JSONStorage("data/usuarios.json")
         self.storage_prestamos = JSONStorage("data/prestamos.json")
@@ -60,7 +59,6 @@ class BibliotecaService:
                 material._url = nuevos_datos.get("url", material._url)
             if hasattr(material, "_numero_edicion"):
                 material._numero_edicion = nuevos_datos.get("numero_edicion", material._numero_edicion)
-            
             self.guardar_materiales()
             return True
         return False
@@ -69,11 +67,11 @@ class BibliotecaService:
         valor = valor.lower()
         resultados = []
         for m in self.materiales.values():
-            if criterio == "título" and valor in m._titulo.lower():
+            if criterio == "titulo" and valor in m._titulo.lower():
                 resultados.append(m)
             elif criterio == "autor" and valor in m._autor.lower():
                 resultados.append(m)
-            elif criterio == "categoría" and valor in m._categoria.lower():
+            elif criterio == "categoria" and valor in m._categoria.lower():
                 resultados.append(m)
         return resultados
 
@@ -102,12 +100,18 @@ class BibliotecaService:
     def obtener_usuarios(self):
         return list(self.usuarios.values())
 
-    def prestar_material(self, *args, **kwargs):
-        return self.prestamo_service.prestar_material(*args, **kwargs)
+    def prestar_material(self, usuario_id, material_id, dias=14):
+        return self.prestamo_service.prestar_material(usuario_id, material_id, dias)
 
-    def devolver_material(self, *args, **kwargs):
-        return self.prestamo_service.devolver_material(*args, **kwargs)
-        
+    def devolver_material(self, material_id):
+        return self.prestamo_service.devolver_material(material_id)
+
+    def reservar_material(self, usuario_id, material_id):
+        return self.reserva_service.reservar_material(usuario_id, material_id)
+
+    def obtener_reservas(self):
+        return self.reserva_service.obtener_reservas()
+
     def guardar_materiales(self):
         data = [m.to_dict() for m in self.materiales.values()]
         self.storage_materiales.guardar(data)
@@ -124,12 +128,6 @@ class BibliotecaService:
         data = [r.to_dict() for r in self.reservas]
         self.storage_reservas.guardar(data)
 
-    def reservar_material(self, *args, **kwargs):
-        return self.reserva_service.reservar_material(*args, **kwargs)
-
-    def obtener_reservas(self):
-        return self.reserva_service.obtener_reservas()
-
     def cargar_datos(self):
         self._cargar_materiales()
         self._cargar_usuarios()
@@ -138,69 +136,45 @@ class BibliotecaService:
 
     def _cargar_materiales(self):
         data = self.storage_materiales.cargar()
-
         for m in data:
             if m["tipo"] == "libro":
-                material = Libro(
-                    m["id"], m["titulo"], m["autor"], m["categoria"],
-                    m.get("isbn", "")
-                )
+                material = Libro(m["id"], m["titulo"], m["autor"], m["categoria"], m.get("isbn", ""))
             elif m["tipo"] == "revista":
-                material = Revista(
-                    m["id"], m["titulo"], m["autor"], m["categoria"],
-                    m.get("numero_edicion", 0)
-                )
+                material = Revista(m["id"], m["titulo"], m["autor"], m["categoria"], m.get("numero_edicion", 0))
             elif m["tipo"] == "digital":
-                material = RecursoDigital(
-                    m["id"], m["titulo"], m["autor"], m["categoria"],
-                    m.get("url", "")
-                )
+                material = RecursoDigital(m["id"], m["titulo"], m["autor"], m["categoria"], m.get("url", ""))
             else:
                 continue
-
-            # Restaurar disponibilidad y uso
             if not m.get("disponible", True):
                 material.prestar()
-            
             material._veces_prestado = m.get("veces_prestado", 0)
-
             self.materiales[m["id"]] = material
 
     def _cargar_usuarios(self):
         data = self.storage_usuarios.cargar()
-
         for u in data:
-            usuario = Usuario(
-                u["id"],
-                u["nombre"]
-            )
-
+            usuario = Usuario(u["id"], u["nombre"])
             if u.get("sancionado", False):
                 usuario.sancionar()
-
             self.usuarios[u["id"]] = usuario
 
     def _cargar_prestamos(self):
-        data = self.storage_prestamos.cargar()
         from datetime import datetime
-
+        data = self.storage_prestamos.cargar()
         for p in data:
             usuario = self.usuarios.get(p["usuario"])
             material = self.materiales.get(p["material"])
-
             if usuario and material:
                 prestamo = Prestamo(usuario, material)
                 prestamo.activo = p.get("activo", True)
-                
                 if "fecha_prestamo" in p:
                     prestamo.fecha_prestamo = datetime.fromisoformat(p["fecha_prestamo"])
                 if "fecha_vencimiento" in p:
                     prestamo.fecha_vencimiento = datetime.fromisoformat(p["fecha_vencimiento"])
                 if "fecha_devolucion" in p and p["fecha_devolucion"]:
                     prestamo.fecha_devolucion = datetime.fromisoformat(p["fecha_devolucion"])
-                
                 self.prestamos.append(prestamo)
-                
+
     def _cargar_reservas(self):
         data = self.storage_reservas.cargar()
         for r in data:
