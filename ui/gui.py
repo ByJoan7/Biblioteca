@@ -248,39 +248,6 @@ class BibliotecaApp:
             command=self.devolver_seleccionado
         ).pack(side="left", padx=10)
 
-        tk.Label(
-            self.contenido,
-            text="📊 Informes del Sistema",
-            font=("Segoe UI", 20, "bold"),
-            fg="white",
-            bg="#0f172a"
-        ).pack(pady=20)
-
-        frame_info = tk.Frame(self.contenido, bg="#0f172a")
-        frame_info.pack(fill="both", expand=True, padx=40)
-
-        # Estadísticas básicas
-        materiales = self.service.obtener_materiales()
-        prestados = [m for m in materiales if not m.esta_disponible()]
-        vencidos = [p for p in self.service.prestamos if p.activo and p.esta_vencido()]
-        usuarios = self.service.obtener_usuarios()
-
-        stats = [
-            (f"📚 Total Materiales: {len(materiales)}", "#3b82f6"),
-            (f"🤝 Préstamos Activos: {len(prestados)}", "#f59e0b"),
-            (f"⚠️ Préstamos Vencidos: {len(vencidos)}", "#ef4444"),
-            (f"👤 Total Usuarios: {len(usuarios)}", "#22c55e")
-        ]
-
-        if materiales:
-            mas_usado = max(materiales, key=lambda m: m._veces_prestado)
-            stats.append((f"🔥 Más Usado: {mas_usado._titulo} ({mas_usado._veces_prestado} veces)", "#f43f5e"))
-
-        for texto, color in stats:
-            f = tk.Frame(frame_info, bg="#1e293b", padx=20, pady=20)
-            f.pack(fill="x", pady=10)
-            tk.Label(f, text=texto, fg=color, bg="#1e293b", font=("Segoe UI", 14, "bold")).pack(side="left")
-
     def centrar_ventana(self, win, ancho, alto):
         win.update_idletasks()
 
@@ -942,20 +909,24 @@ class BibliotecaApp:
         frame_info = tk.Frame(self.contenido, bg="#0f172a")
         frame_info.pack(fill="both", expand=True, padx=40)
 
+        # Estadísticas básicas
         materiales = self.service.obtener_materiales()
         prestados = [m for m in materiales if not m.esta_disponible()]
         vencidos = [p for p in self.service.prestamos if p.activo and p.esta_vencido()]
         usuarios = self.service.obtener_usuarios()
 
         stats = [
-            (f"👤 Total Usuarios: {len(usuarios)}", "#22c55e"),
             (f"📚 Total Materiales: {len(materiales)}", "#3b82f6"),
             (f"🤝 Préstamos Activos: {len(prestados)}", "#f59e0b"),
-            (f"⚠️ Préstamos Vencidos: {len(vencidos)}", "#ef4444")
+            (f"⚠️ Préstamos Vencidos: {len(vencidos)}", "#ef4444"),
+            (f"👤 Total Usuarios: {len(usuarios)}", "#22c55e")
         ]
+
+        if materiales:
+            mas_usado = max(materiales, key=lambda m: m._veces_prestado)
+            stats.append((f"🔥 Más Usado: {mas_usado._titulo} ({mas_usado._veces_prestado} veces)", "#f43f5e"))
 
         for texto, color in stats:
             f = tk.Frame(frame_info, bg="#1e293b", padx=20, pady=20)
             f.pack(fill="x", pady=10)
-            tk.Label(f, text=texto, fg=color, bg="#1e293b",
-                    font=("Segoe UI", 14, "bold")).pack(side="left")
+            tk.Label(f, text=texto, fg=color, bg="#1e293b", font=("Segoe UI", 14, "bold")).pack(side="left")
