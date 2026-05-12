@@ -1,4 +1,5 @@
 from models.reserva import Reserva
+from utils.excepciones import UsuarioSancionadoError
 
 
 class ReservaService:
@@ -15,17 +16,14 @@ class ReservaService:
 
         if not usuario:
             raise Exception("El usuario no existe")
-
         if not material:
             raise Exception("El material no existe")
-
         if usuario.esta_sancionado():
-            raise Exception("El usuario esta sancionado y no puede hacer reservas")
+            raise UsuarioSancionadoError("El usuario esta sancionado y no puede hacer reservas")
 
         reserva = Reserva(usuario, material)
         self.reservas.append(reserva)
         self._guardar_reservas()
-
         return reserva
 
     def cancelar_reserva(self, usuario_id, material_id):
