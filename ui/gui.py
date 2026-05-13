@@ -346,6 +346,29 @@ class BibliotecaApp:
             bg="#0f172a"
         ).pack(pady=20)
 
+        # =========================================================
+        # BUSCADOR
+        # =========================================================
+
+        top = tk.Frame(self.contenido, bg="#0f172a")
+        top.pack(fill="x", padx=20, pady=(0, 10))
+
+        buscador = tk.Entry(
+            top,
+            bg="#1e293b",
+            fg="white",
+            insertbackground="white",
+            relief="solid",
+            bd=1,
+            font=("Segoe UI", 10)
+        )
+
+        buscador.pack(fill="x", ipady=6)
+
+        # =========================================================
+        # TABLA
+        # =========================================================
+
         self.tabla_usuarios = ttk.Treeview(
             self.contenido,
             columns=("ID", "Nombre", "Sancionado"),
@@ -357,7 +380,33 @@ class BibliotecaApp:
 
         self.tabla_usuarios.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.cargar_usuarios()
+        # =========================================================
+        # CARGAR USUARIOS
+        # =========================================================
+
+        def cargar(filtro=""):
+
+            for i in self.tabla_usuarios.get_children():
+                self.tabla_usuarios.delete(i)
+
+            for u in self.service.obtener_usuarios():
+
+                if filtro and filtro.lower() not in u._nombre.lower():
+                    continue
+
+                self.tabla_usuarios.insert(
+                    "",
+                    "end",
+                    values=(
+                        u._id,
+                        u._nombre,
+                        "Sí" if u.esta_sancionado() else "No"
+                    )
+                )
+
+        buscador.bind("<KeyRelease>", lambda e: cargar(buscador.get()))
+
+        cargar()
 
         frame_acciones = tk.Frame(self.contenido, bg="#0f172a")
         frame_acciones.pack(pady=10)
@@ -921,13 +970,18 @@ class BibliotecaApp:
             # =========================
             else:
 
+                fecha_devolucion = ""
+
+                if hasattr(p, "fecha_devolucion") and p.fecha_devolucion:
+                    fecha_devolucion = p.fecha_devolucion.strftime("%d/%m/%Y")
+
                 self.tabla_devoluciones.insert(
                     "",
                     "end",
                     values=(
                         p.usuario._nombre,
                         p.material._titulo,
-                        p.fecha_vencimiento.strftime("%d/%m/%Y"),
+                        fecha_devolucion,
                         multa
                     )
                 )
@@ -1097,6 +1151,8 @@ class BibliotecaApp:
                 prestamo.material._titulo == material_titulo
             ):
 
+                from datetime import datetime
+                prestamo.fecha_devolucion = datetime.now()
                 self.service.devolver_material(prestamo.material._id)
                 break
 
