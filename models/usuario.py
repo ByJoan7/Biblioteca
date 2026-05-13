@@ -5,9 +5,10 @@
 class Usuario:
     # Constructor de la clase
 
-    def __init__(self, id, nombre):
+    def __init__(self, id, nombre, telefono):
         self._id = id
         self._nombre = nombre
+        self._telefono = telefono
         self._sancionado = False
         self._prestamos_activos = 0
         self._max_prestamos = 3
@@ -42,6 +43,7 @@ class Usuario:
         return {
             "id": self._id,
             "nombre": self._nombre,
+            "telefono": self._telefono,
             "sancionado": self._sancionado,
             "prestamos_activos": self._prestamos_activos,
             "tipo": "usuario"
@@ -53,8 +55,8 @@ class Usuario:
 class Socio(Usuario):
     # Constructor de la clase
 
-    def __init__(self, id, nombre, numero_socio):
-        super().__init__(id, nombre)
+    def __init__(self, id, nombre, telefono, numero_socio):
+        super().__init__(id, nombre, telefono)
         self._numero_socio = numero_socio
         self._max_prestamos = 3
 
@@ -71,8 +73,8 @@ class Socio(Usuario):
 class Bibliotecario(Usuario):
     # Constructor de la clase
 
-    def __init__(self, id, nombre, numero_empleado):
-        super().__init__(id, nombre)
+    def __init__(self, id, nombre, telefono, numero_empleado):
+        super().__init__(id, nombre, telefono)
         self._numero_empleado = numero_empleado
         self._max_prestamos = 5
 
@@ -89,8 +91,8 @@ class Bibliotecario(Usuario):
 class Administrador(Usuario):
     # Constructor de la clase
 
-    def __init__(self, id, nombre):
-        super().__init__(id, nombre)
+    def __init__(self, id, nombre, telefono):
+        super().__init__(id, nombre, telefono)
         self._max_prestamos = 999
 
     # Funcion sancionar: realiza una parte del funcionamiento del programa

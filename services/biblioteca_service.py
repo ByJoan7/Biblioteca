@@ -109,6 +109,7 @@ class BibliotecaService:
         if not usuario:
             return False
         usuario._nombre = nuevos_datos.get("nombre", usuario._nombre)
+        usuario._telefono = nuevos_datos.get("telefono", usuario._telefono)
         self.guardar_usuarios()
         return True
 
@@ -252,19 +253,47 @@ class BibliotecaService:
     # Funcion _cargar_usuarios: realiza una parte del funcionamiento del programa
     def _cargar_usuarios(self):
         data = self.storage_usuarios.cargar()
+
         for u in data:
+
             tipo = u.get("tipo", "usuario")
+            telefono = u.get("telefono", "")
+
             if tipo == "socio":
-                usuario = Socio(u["id"], u["nombre"], u.get("numero_socio", ""))
+                usuario = Socio(
+                    u["id"],
+                    u["nombre"],
+                    telefono,
+                    u.get("numero_socio", "")
+                )
+
             elif tipo == "bibliotecario":
-                usuario = Bibliotecario(u["id"], u["nombre"], u.get("numero_empleado", ""))
+                usuario = Bibliotecario(
+                    u["id"],
+                    u["nombre"],
+                    telefono,
+                    u.get("numero_empleado", "")
+                )
+
             elif tipo == "administrador":
-                usuario = Administrador(u["id"], u["nombre"])
+                usuario = Administrador(
+                    u["id"],
+                    u["nombre"],
+                    telefono
+                )
+
             else:
-                usuario = Usuario(u["id"], u["nombre"])
+                usuario = Usuario(
+                    u["id"],
+                    u["nombre"],
+                    telefono
+                )
+
             if u.get("sancionado", False):
                 usuario.sancionar()
+
             usuario._prestamos_activos = u.get("prestamos_activos", 0)
+
             self.usuarios[u["id"]] = usuario
 
     # Funcion _cargar_prestamos: realiza una parte del funcionamiento del programa

@@ -35,6 +35,14 @@ class BibliotecaApp:
         style = ttk.Style()
         style.theme_use("default")
 
+        style.configure(
+            "TScrollbar",
+            background="#1e293b",
+            troughcolor="#0f172a",
+            bordercolor="#0f172a",
+            arrowcolor="white"
+        )
+
         # Treeview moderno oscuro
         style.configure(
             "Treeview",
@@ -371,11 +379,11 @@ class BibliotecaApp:
 
         self.tabla_usuarios = ttk.Treeview(
             self.contenido,
-            columns=("ID", "Nombre", "Sancionado"),
+            columns=("ID", "Nombre", "Teléfono", "Sancionado"),
             show="headings"
         )
 
-        for col in ("ID", "Nombre", "Sancionado"):
+        for col in ("ID", "Nombre", "Teléfono", "Sancionado"):
             self.tabla_usuarios.heading(col, text=col)
 
         self.tabla_usuarios.pack(fill="both", expand=True, padx=20, pady=20)
@@ -400,6 +408,7 @@ class BibliotecaApp:
                     values=(
                         u._id,
                         u._nombre,
+                        u._telefono,
                         "Sí" if u.esta_sancionado() else "No"
                     )
                 )
@@ -456,6 +465,7 @@ class BibliotecaApp:
                 values=(
                     u._id,
                     u._nombre,
+                    u._telefono,
                     "Sí" if u.esta_sancionado() else "No"
                 )
             )
@@ -483,7 +493,7 @@ class BibliotecaApp:
         main = self.crear_scrollable_frame(container)
 
         entries = {}
-        campos = ["Nombre"]
+        campos = ["Nombre", "Teléfono"]
 
         for campo in campos:
             tk.Label(
@@ -514,7 +524,8 @@ class BibliotecaApp:
 
             usuario = Usuario(
                 nuevo_id,
-                entries["Nombre"].get()
+                entries["Nombre"].get(),
+                entries["Teléfono"].get()
             )
 
             self.service.agregar_usuario(usuario)
@@ -560,10 +571,22 @@ class BibliotecaApp:
         name_entry.insert(0, valores[1])
         name_entry.pack(fill="x", ipady=6)
 
+        tk.Label(main, text="Teléfono", fg="white", bg="#0f172a").pack(anchor="w")
+
+        telefono_entry = tk.Entry(main, bg="#1f2937", fg="white")
+        telefono_entry.insert(0, valores[2])
+        telefono_entry.pack(fill="x", ipady=6)
+
         # Esta funcion guarda datos
 
         def guardar():
-            self.service.modificar_usuario(u_id, {"nombre": name_entry.get()})
+            self.service.modificar_usuario(
+                u_id,
+                {
+                    "nombre": name_entry.get(),
+                    "telefono": telefono_entry.get()
+                }
+            )
             self.cargar_usuarios()
             win.destroy()
 
@@ -1218,28 +1241,133 @@ class BibliotecaApp:
 
     # Funcion formulario_reserva: realiza una parte del funcionamiento del programa
     def formulario_reserva(self):
-        win = self.abrir_formulario("Nueva Reserva", alto=250)
-        main = self.crear_scrollable_frame(win)
 
-        tk.Label(main, text="ID Usuario", fg="white", bg="#0f172a").pack(anchor="w")
-        u_id = tk.Entry(main, bg="#1f2937", fg="white")
-        u_id.pack(fill="x", ipady=6)
+        win = self.abrir_formulario("Nueva Reserva", alto=350)
 
-        tk.Label(main, text="ID Material", fg="white", bg="#0f172a").pack(anchor="w", pady=(10, 0))
-        m_id = tk.Entry(main, bg="#1f2937", fg="white")
-        m_id.pack(fill="x", ipady=6)
+        container = tk.Frame(win, bg="#0f172a")
+        container.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # Funcion realizar: realiza una parte del funcionamiento del programa
+        main = self.crear_scrollable_frame(container)
+
+        # =========================================================
+        # USUARIOS
+        # =========================================================
+
+        tk.Label(
+            main,
+            text="Usuario",
+            fg="white",
+            bg="#0f172a"
+        ).pack(anchor="w")
+
+        usuarios = self.service.obtener_usuarios()
+
+        usuarios_dict = {
+            f"{u._id} - {u._nombre}": u._id
+            for u in usuarios
+        }
+
+        usuario_var = tk.StringVar()
+
+        usuario_combo = ttk.Combobox(
+            main,
+            textvariable=usuario_var,
+            values=list(usuarios_dict.keys()),
+            state="readonly"
+        )
+
+        usuario_combo.pack(fill="x", ipady=5)
+
+        # =========================================================
+        # MATERIALES NO DISPONIBLES
+        # =========================================================
+
+        tk.Label(
+            main,
+            text="Material",
+            fg="white",
+            bg="#0f172a"
+        ).pack(anchor="w", pady=(15, 0))
+
+        materiales = [
+            m for m in self.service.obtener_materiales()
+            if not m.esta_disponible()
+        ]
+
+        materiales_dict = {}
+
+        for m in materiales:
+
+            # Libro
+            if hasattr(m, "_isbn"):
+                texto = f"{m._id} - ISBN: {m._isbn}"
+
+            # Revista
+            elif hasattr(m, "_numero_edicion"):
+                texto = f"{m._id} - Edición: {m._numero_edicion}"
+
+            # Digital
+            elif hasattr(m, "_url"):
+                texto = f"{m._id} - URL"
+
+            else:
+                texto = f"{m._id}"
+
+            materiales_dict[texto] = m._id
+
+        material_var = tk.StringVar()
+
+        material_combo = ttk.Combobox(
+            main,
+            textvariable=material_var,
+            values=list(materiales_dict.keys()),
+            state="readonly"
+        )
+
+        material_combo.pack(fill="x", ipady=5)
+
+        # =========================================================
+        # RESERVAR
+        # =========================================================
+
         def realizar():
             try:
-                self.service.reservar_material(u_id.get(), m_id.get())
+
+                usuario_texto = usuario_var.get()
+                material_texto = material_var.get()
+
+                if not usuario_texto:
+                    raise Exception("Selecciona un usuario")
+
+                if not material_texto:
+                    raise Exception("Selecciona un material")
+
+                usuario_id = usuarios_dict[usuario_texto]
+                material_id = materiales_dict[material_texto]
+
+                self.service.reservar_material(
+                    str(usuario_id),
+                    str(material_id)
+                )
+
                 self.cargar_reservas()
+
                 win.destroy()
+
             except Exception as e:
                 from tkinter import messagebox
                 messagebox.showerror("Error", str(e))
 
-        tk.Button(main, text="Reservar", bg="#3b82f6", fg="white", command=realizar).pack(fill="x", pady=20)
+        tk.Button(
+            main,
+            text="Reservar",
+            bg="#3b82f6",
+            fg="white",
+            font=("Segoe UI", 11, "bold"),
+            relief="flat",
+            cursor="hand2",
+            command=realizar
+        ).pack(fill="x", pady=20)
 
     # =========================================================
     # 8. MÓDULO INFORMES
