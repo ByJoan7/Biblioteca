@@ -227,26 +227,89 @@ class BibliotecaApp:
             bg="#0f172a"
         ).pack(pady=20)
 
-        frame_tabla = tk.Frame(self.contenido, bg="#0f172a")
-        frame_tabla.pack(fill="both", expand=True, padx=25, pady=15)
+        # Frame scrollable
+        cont = self.crear_scrollable_frame(self.contenido)
+
+        # =========================================================
+        # TABLA PRÉSTAMOS ACTIVOS
+        # =========================================================
+
+        frame_prestamos = tk.Frame(cont, bg="#1e293b")
+        frame_prestamos.pack(fill="x", padx=20, pady=10)
+
+        tk.Label(
+            frame_prestamos,
+            text="📚 Préstamos Activos",
+            font=("Segoe UI", 14, "bold"),
+            fg="#38bdf8",
+            bg="#1e293b"
+        ).pack(anchor="w", padx=10, pady=(8, 4))
 
         self.tabla_prestamos = ttk.Treeview(
-            frame_tabla,
+            frame_prestamos,
             columns=("Usuario", "Material", "Vencimiento", "Estado", "Multa"),
             show="headings",
+            height=6
         )
-        self.tabla_prestamos.pack(fill="both", expand=True)
 
         for col in ("Usuario", "Material", "Vencimiento", "Estado", "Multa"):
             self.tabla_prestamos.heading(col, text=col)
 
+        self.tabla_prestamos.column("Usuario", width=180)
+        self.tabla_prestamos.column("Material", width=220)
+        self.tabla_prestamos.column("Vencimiento", width=120, anchor="center")
+        self.tabla_prestamos.column("Estado", width=100, anchor="center")
+        self.tabla_prestamos.column("Multa", width=80, anchor="center")
+
+        self.tabla_prestamos.pack(fill="x", padx=10, pady=(0, 10))
+
+        # =========================================================
+        # TABLA DEVOLUCIONES
+        # =========================================================
+
+        frame_devoluciones = tk.Frame(cont, bg="#1e293b")
+        frame_devoluciones.pack(fill="x", padx=20, pady=10)
+
+        tk.Label(
+            frame_devoluciones,
+            text="🔙 Devoluciones",
+            font=("Segoe UI", 14, "bold"),
+            fg="#38bdf8",
+            bg="#1e293b"
+        ).pack(anchor="w", padx=10, pady=(8, 4))
+
+        self.tabla_devoluciones = ttk.Treeview(
+            frame_devoluciones,
+            columns=("Usuario", "Material", "Fecha Devolución", "Multa"),
+            show="headings",
+            height=6
+        )
+
+        for col in ("Usuario", "Material", "Fecha Devolución", "Multa"):
+            self.tabla_devoluciones.heading(col, text=col)
+
+        self.tabla_devoluciones.column("Usuario", width=180)
+        self.tabla_devoluciones.column("Material", width=220)
+        self.tabla_devoluciones.column("Fecha Devolución", width=140, anchor="center")
+        self.tabla_devoluciones.column("Multa", width=80, anchor="center")
+
+        self.tabla_devoluciones.pack(fill="x", padx=10, pady=(0, 10))
+
+        # Cargar datos
         self.cargar_prestamos()
 
-        frame_acciones = tk.Frame(self.contenido, bg="#0f172a")
-        frame_acciones.pack(pady=10)
+        # =========================================================
+        # BOTONES
+        # =========================================================
+
+        frame_acciones = tk.Frame(cont, bg="#0f172a")
+        frame_acciones.pack(fill="x", pady=(5, 20))
+
+        frame_botones = tk.Frame(frame_acciones, bg="#0f172a")
+        frame_botones.pack(anchor="center")
 
         tk.Button(
-            frame_acciones,
+            frame_botones,
             text="🤝 Prestar",
             bg="#3b82f6",
             fg="white",
@@ -254,10 +317,10 @@ class BibliotecaApp:
             relief="flat",
             cursor="hand2",
             command=self.formulario_prestar
-        ).pack(side="left", padx=10)
+        ).pack(side="left", padx=10, pady=10)
 
         tk.Button(
-            frame_acciones,
+            frame_botones,
             text="🔙 Devolver",
             bg="#22c55e",
             fg="white",
@@ -265,19 +328,7 @@ class BibliotecaApp:
             relief="flat",
             cursor="hand2",
             command=self.devolver_seleccionado
-        ).pack(side="left", padx=10)
-
-    # Funcion centrar_ventana: realiza una parte del funcionamiento del programa
-    def centrar_ventana(self, win, ancho, alto):
-        win.update_idletasks()
-
-        pantalla_ancho = win.winfo_screenwidth()
-        pantalla_alto = win.winfo_screenheight()
-
-        x = (pantalla_ancho // 2) - (ancho // 2)
-        y = (pantalla_alto // 2) - (alto // 2)
-
-        win.geometry(f"{ancho}x{alto}+{x}+{y}")
+        ).pack(side="left", padx=10, pady=10)
 
     # =========================================================
     # 6. MÓDULO USUARIOS
@@ -741,6 +792,16 @@ class BibliotecaApp:
             if t == "Libro":
                 material = Libro(id_val, tit, aut, cat, extra)
             elif t == "Revista":
+                try:
+                    extra = int(extra)
+                except ValueError:
+                    from tkinter import messagebox
+                    messagebox.showerror(
+                        "Error",
+                        "La edición de la revista debe ser un número"
+                    )
+                    return
+
                 material = Revista(id_val, tit, aut, cat, extra)
             else:
                 material = RecursoDigital(id_val, tit, aut, cat, extra)
@@ -820,27 +881,56 @@ class BibliotecaApp:
 
     # Funcion cargar_prestamos: realiza una parte del funcionamiento del programa
     def cargar_prestamos(self):
+
+        # Limpiar tablas
         for i in self.tabla_prestamos.get_children():
             self.tabla_prestamos.delete(i)
 
+        for i in self.tabla_devoluciones.get_children():
+            self.tabla_devoluciones.delete(i)
+
+        # Cargar datos
         for p in self.service.prestamos:
-            estado = "Activo" if p.activo else "Devuelto"
-            if p.activo and p.esta_vencido():
-                estado = "VENCIDO"
-            
+
             multa = f"{p.calcular_multa():.2f}€"
-            
-            self.tabla_prestamos.insert(
-                "",
-                "end",
-                values=(
-                    p.usuario._nombre,
-                    p.material._titulo,
-                    p.fecha_vencimiento.strftime("%d/%m/%Y"),
-                    estado,
-                    multa
+
+            # =========================
+            # PRÉSTAMOS ACTIVOS
+            # =========================
+            if p.activo:
+
+                estado = "Activo"
+
+                if p.esta_vencido():
+                    estado = "VENCIDO"
+
+                self.tabla_prestamos.insert(
+                    "",
+                    "end",
+                    values=(
+                        p.usuario._nombre,
+                        p.material._titulo,
+                        p.fecha_vencimiento.strftime("%d/%m/%Y"),
+                        estado,
+                        multa
+                    )
                 )
-            )
+
+            # =========================
+            # DEVOLUCIONES
+            # =========================
+            else:
+
+                self.tabla_devoluciones.insert(
+                    "",
+                    "end",
+                    values=(
+                        p.usuario._nombre,
+                        p.material._titulo,
+                        p.fecha_vencimiento.strftime("%d/%m/%Y"),
+                        multa
+                    )
+                )
 
     # Funcion formulario_prestar: realiza una parte del funcionamiento del programa
     def formulario_prestar(self):
@@ -969,8 +1059,6 @@ class BibliotecaApp:
                 )
 
                 self.cargar_prestamos()
-                self.mostrar_materiales()
-
                 win.destroy()
 
             except Exception as e:
@@ -991,16 +1079,28 @@ class BibliotecaApp:
     # Funcion devolver_seleccionado: realiza una parte del funcionamiento del programa
     def devolver_seleccionado(self):
         item = self.tabla_prestamos.selection()
+
         if not item:
             return
-        
-        # Encontrar el préstamo correspondiente
-        idx = self.tabla_prestamos.index(item)
-        prestamo = self.service.prestamos[idx]
-        
-        if prestamo.activo:
-            self.service.devolver_material(prestamo.material._id)
-            self.cargar_prestamos()
+
+        valores = self.tabla_prestamos.item(item)["values"]
+
+        usuario_nombre = valores[0]
+        material_titulo = valores[1]
+
+        # Buscar el préstamo activo correcto
+        for prestamo in self.service.prestamos:
+
+            if (
+                prestamo.activo and
+                prestamo.usuario._nombre == usuario_nombre and
+                prestamo.material._titulo == material_titulo
+            ):
+
+                self.service.devolver_material(prestamo.material._id)
+                break
+
+        self.cargar_prestamos()
 
     # =========================================================
     # 7. MÓDULO RESERVAS
