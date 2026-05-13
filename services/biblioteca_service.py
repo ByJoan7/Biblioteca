@@ -1,3 +1,5 @@
+# Archivo: biblioteca_service.py
+# Este archivo forma parte del sistema de biblioteca.
 from persistence.json_storage import JSONStorage
 from models.prestamo import Prestamo
 from models.libro import Libro
@@ -9,7 +11,11 @@ from services.prestamo_service import PrestamoService
 from services.reserva_service import ReservaService
 
 
+
+# Esta clase representa BibliotecaService
 class BibliotecaService:
+
+    # Constructor de la clase
 
     def __init__(self):
         self.materiales = {}
@@ -35,10 +41,12 @@ class BibliotecaService:
 
     # MATERIALES
 
+    # Funcion agregar_material: realiza una parte del funcionamiento del programa
     def agregar_material(self, material):
         self.materiales[material._id] = material
         self.guardar_materiales()
 
+    # Funcion eliminar_material: realiza una parte del funcionamiento del programa
     def eliminar_material(self, material_id):
         if material_id in self.materiales:
             del self.materiales[material_id]
@@ -46,6 +54,7 @@ class BibliotecaService:
             return True
         return False
 
+    # Funcion modificar_material: realiza una parte del funcionamiento del programa
     def modificar_material(self, material_id, nuevos_datos):
         material = self.materiales.get(material_id)
         if not material:
@@ -62,9 +71,11 @@ class BibliotecaService:
         self.guardar_materiales()
         return True
 
+    # Funcion obtener_materiales: realiza una parte del funcionamiento del programa
     def obtener_materiales(self):
         return list(self.materiales.values())
 
+    # Funcion buscar_materiales: realiza una parte del funcionamiento del programa
     def buscar_materiales(self, criterio, valor):
         valor = valor.lower()
         resultados = []
@@ -79,10 +90,12 @@ class BibliotecaService:
 
     # USUARIOS
 
+    # Funcion agregar_usuario: realiza una parte del funcionamiento del programa
     def agregar_usuario(self, usuario):
         self.usuarios[usuario._id] = usuario
         self.guardar_usuarios()
 
+    # Funcion eliminar_usuario: realiza una parte del funcionamiento del programa
     def eliminar_usuario(self, usuario_id):
         if usuario_id in self.usuarios:
             del self.usuarios[usuario_id]
@@ -90,6 +103,7 @@ class BibliotecaService:
             return True
         return False
 
+    # Funcion modificar_usuario: realiza una parte del funcionamiento del programa
     def modificar_usuario(self, usuario_id, nuevos_datos):
         usuario = self.usuarios.get(usuario_id)
         if not usuario:
@@ -98,30 +112,37 @@ class BibliotecaService:
         self.guardar_usuarios()
         return True
 
+    # Funcion obtener_usuarios: realiza una parte del funcionamiento del programa
     def obtener_usuarios(self):
         return list(self.usuarios.values())
 
     # PRESTAMOS
 
+    # Funcion prestar_material: realiza una parte del funcionamiento del programa
     def prestar_material(self, usuario_id, material_id, dias=14):
         return self.prestamo_service.prestar_material(usuario_id, material_id, dias)
 
+    # Funcion devolver_material: realiza una parte del funcionamiento del programa
     def devolver_material(self, material_id):
         return self.prestamo_service.devolver_material(material_id)
 
     # RESERVAS
 
+    # Funcion reservar_material: realiza una parte del funcionamiento del programa
     def reservar_material(self, usuario_id, material_id):
         return self.reserva_service.reservar_material(usuario_id, material_id)
 
+    # Funcion cancelar_reserva: realiza una parte del funcionamiento del programa
     def cancelar_reserva(self, usuario_id, material_id):
         return self.reserva_service.cancelar_reserva(usuario_id, material_id)
 
+    # Funcion obtener_reservas: realiza una parte del funcionamiento del programa
     def obtener_reservas(self):
         return self.reserva_service.obtener_reservas()
 
     # INFORMES
 
+    # Funcion informe_materiales_disponibles: realiza una parte del funcionamiento del programa
     def informe_materiales_disponibles(self):
         resultado = []
         for m in self.materiales.values():
@@ -129,6 +150,7 @@ class BibliotecaService:
                 resultado.append(m)
         return resultado
 
+    # Funcion informe_materiales_prestados: realiza una parte del funcionamiento del programa
     def informe_materiales_prestados(self):
         resultado = []
         for m in self.materiales.values():
@@ -136,6 +158,7 @@ class BibliotecaService:
                 resultado.append(m)
         return resultado
 
+    # Funcion informe_prestamos_vencidos: realiza una parte del funcionamiento del programa
     def informe_prestamos_vencidos(self):
         resultado = []
         for p in self.prestamos:
@@ -143,6 +166,7 @@ class BibliotecaService:
                 resultado.append(p)
         return resultado
 
+    # Funcion informe_usuarios_sancionados: realiza una parte del funcionamiento del programa
     def informe_usuarios_sancionados(self):
         resultado = []
         for u in self.usuarios.values():
@@ -150,6 +174,7 @@ class BibliotecaService:
                 resultado.append(u)
         return resultado
 
+    # Funcion informe_materiales_mas_usados: realiza una parte del funcionamiento del programa
     def informe_materiales_mas_usados(self):
         materiales = list(self.materiales.values())
         for i in range(len(materiales)):
@@ -162,30 +187,35 @@ class BibliotecaService:
 
     # GUARDAR
 
+    # Funcion guardar_materiales: realiza una parte del funcionamiento del programa
     def guardar_materiales(self):
         data = []
         for m in self.materiales.values():
             data.append(m.to_dict())
         self.storage_materiales.guardar(data)
 
+    # Funcion guardar_usuarios: realiza una parte del funcionamiento del programa
     def guardar_usuarios(self):
         data = []
         for u in self.usuarios.values():
             data.append(u.to_dict())
         self.storage_usuarios.guardar(data)
 
+    # Funcion guardar_prestamos: realiza una parte del funcionamiento del programa
     def guardar_prestamos(self):
         data = []
         for p in self.prestamos:
             data.append(p.to_dict())
         self.storage_prestamos.guardar(data)
 
+    # Funcion guardar_reservas: realiza una parte del funcionamiento del programa
     def guardar_reservas(self):
         data = []
         for r in self.reservas:
             data.append(r.to_dict())
         self.storage_reservas.guardar(data)
 
+    # Funcion guardar_todo: realiza una parte del funcionamiento del programa
     def guardar_todo(self):
         self.guardar_materiales()
         self.guardar_usuarios()
@@ -194,12 +224,14 @@ class BibliotecaService:
 
     # CARGAR
 
+    # Funcion cargar_datos: realiza una parte del funcionamiento del programa
     def cargar_datos(self):
         self._cargar_materiales()
         self._cargar_usuarios()
         self._cargar_prestamos()
         self._cargar_reservas()
 
+    # Funcion _cargar_materiales: realiza una parte del funcionamiento del programa
     def _cargar_materiales(self):
         data = self.storage_materiales.cargar()
         for m in data:
@@ -217,6 +249,7 @@ class BibliotecaService:
             material._veces_prestado = m.get("veces_prestado", 0)
             self.materiales[m["id"]] = material
 
+    # Funcion _cargar_usuarios: realiza una parte del funcionamiento del programa
     def _cargar_usuarios(self):
         data = self.storage_usuarios.cargar()
         for u in data:
@@ -234,6 +267,7 @@ class BibliotecaService:
             usuario._prestamos_activos = u.get("prestamos_activos", 0)
             self.usuarios[u["id"]] = usuario
 
+    # Funcion _cargar_prestamos: realiza una parte del funcionamiento del programa
     def _cargar_prestamos(self):
         from datetime import datetime
         data = self.storage_prestamos.cargar()
@@ -252,6 +286,7 @@ class BibliotecaService:
                 prestamo.fecha_devolucion = datetime.fromisoformat(p["fecha_devolucion"])
             self.prestamos.append(prestamo)
 
+    # Funcion _cargar_reservas: realiza una parte del funcionamiento del programa
     def _cargar_reservas(self):
         from datetime import datetime
         data = self.storage_reservas.cargar()

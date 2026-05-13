@@ -1,3 +1,5 @@
+# Archivo: console_main.py
+# Este archivo forma parte del sistema de biblioteca.
 import random
 import atexit
 from services.biblioteca_service import BibliotecaService
@@ -8,6 +10,7 @@ from models.usuario import Socio, Bibliotecario, Administrador
 
 
 # genera un id de 4 cifras que no se repita
+# Funcion generar_id: realiza una parte del funcionamiento del programa
 def generar_id(existentes):
     while True:
         nuevo = str(random.randint(1000, 9999))
@@ -15,6 +18,7 @@ def generar_id(existentes):
             return nuevo
 
 
+# Funcion menu_materiales: realiza una parte del funcionamiento del programa
 def menu_materiales(service):
     while True:
         print("\n--- MATERIALES ---")
@@ -148,6 +152,7 @@ def menu_materiales(service):
             print("Opcion no valida.")
 
 
+# Funcion menu_usuarios: realiza una parte del funcionamiento del programa
 def menu_usuarios(service):
     while True:
         print("\n--- USUARIOS ---")
@@ -232,6 +237,7 @@ def menu_usuarios(service):
             print("Opcion no valida.")
 
 
+# Funcion menu_prestar: realiza una parte del funcionamiento del programa
 def menu_prestar(service):
     while True:
         print("\n--- PRESTAR ---")
@@ -327,6 +333,7 @@ def menu_prestar(service):
             print("Opcion no valida.")
 
 
+# Funcion menu_reservas: realiza una parte del funcionamiento del programa
 def menu_reservas(service):
     while True:
         print("\n--- RESERVAS ---")
@@ -399,6 +406,7 @@ def menu_reservas(service):
             print("Opcion no valida.")
 
 
+# Funcion menu_informes: realiza una parte del funcionamiento del programa
 def menu_informes(service):
     while True:
         print("\n--- INFORMES ---")
@@ -449,6 +457,7 @@ def menu_informes(service):
             print("Opcion no valida.")
 
 
+# Funcion menu_consola: realiza una parte del funcionamiento del programa
 def menu_consola():
     service = BibliotecaService()
     atexit.register(service.guardar_todo)

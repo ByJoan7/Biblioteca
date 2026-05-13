@@ -1,13 +1,19 @@
+# Archivo: gui.py
+# Este archivo forma parte del sistema de biblioteca.
 import tkinter as tk
 from tkinter import ttk
 import random
 
 
+
+# Esta clase representa BibliotecaApp
 class BibliotecaApp:
 
     # =========================================================
     # 1. INICIALIZACIÓN
     # =========================================================
+
+    # Constructor de la clase
 
     def __init__(self, root, service):
         self.root = root
@@ -24,6 +30,7 @@ class BibliotecaApp:
     # 1.1 ESTILOS 
     # =========================================================
 
+    # Funcion estilos: realiza una parte del funcionamiento del programa
     def estilos(self):
         style = ttk.Style()
         style.theme_use("default")
@@ -56,6 +63,7 @@ class BibliotecaApp:
     # 2. LAYOUT GENERAL
     # =========================================================
 
+    # Funcion crear_layout: realiza una parte del funcionamiento del programa
     def crear_layout(self):
         self.main_frame = tk.Frame(self.root, bg="#0f172a")
         self.main_frame.pack(fill="both", expand=True)
@@ -73,6 +81,7 @@ class BibliotecaApp:
         self.crear_sidebar()
         self.mostrar_inicio()
 
+    # Funcion crear_sidebar: realiza una parte del funcionamiento del programa
     def crear_sidebar(self):
         titulo = tk.Label(
             self.sidebar,
@@ -93,6 +102,7 @@ class BibliotecaApp:
 
         self.crear_boton("⛔ Salir", self.root.quit, color="#ef4444")
 
+    # Funcion crear_boton: realiza una parte del funcionamiento del programa
     def crear_boton(self, texto, comando, color="#1f2937"):
         btn = tk.Button(
             self.sidebar,
@@ -112,9 +122,11 @@ class BibliotecaApp:
         btn.pack(fill="x", padx=15, pady=6)
 
         # Hover effect
+        # Funcion on_enter: realiza una parte del funcionamiento del programa
         def on_enter(e):
             btn.config(bg="#2563eb")
 
+        # Funcion on_leave: realiza una parte del funcionamiento del programa
         def on_leave(e):
             btn.config(bg=color)
 
@@ -125,10 +137,12 @@ class BibliotecaApp:
     # 3. UTILIDADES
     # =========================================================
 
+    # Funcion limpiar_contenido: realiza una parte del funcionamiento del programa
     def limpiar_contenido(self):
         for widget in self.contenido.winfo_children():
             widget.destroy()
 
+    # Funcion abrir_formulario: realiza una parte del funcionamiento del programa
     def abrir_formulario(self, titulo, ancho=420, alto=340):
         ventana = tk.Toplevel(self.root)
         ventana.title(titulo)
@@ -148,6 +162,7 @@ class BibliotecaApp:
         
         return ventana
 
+    # Funcion crear_scrollable_frame: realiza una parte del funcionamiento del programa
     def crear_scrollable_frame(self, parent):
         canvas = tk.Canvas(parent, bg="#0f172a", highlightthickness=0)
         scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
@@ -159,6 +174,7 @@ class BibliotecaApp:
         )
 
         # Ajustar ancho del frame al canvas
+        # Funcion on_canvas_configure: realiza una parte del funcionamiento del programa
         def on_canvas_configure(e):
             canvas.itemconfig(window_id, width=e.width)
 
@@ -176,6 +192,7 @@ class BibliotecaApp:
     # 4. PANTALLAS PRINCIPALES
     # =========================================================
 
+    # Funcion mostrar_inicio: realiza una parte del funcionamiento del programa
     def mostrar_inicio(self):
         self.limpiar_contenido()
 
@@ -198,6 +215,7 @@ class BibliotecaApp:
             bg="#0f172a"
         ).pack()
 
+    # Funcion mostrar_prestamos: realiza una parte del funcionamiento del programa
     def mostrar_prestamos(self):
         self.limpiar_contenido()
 
@@ -249,6 +267,7 @@ class BibliotecaApp:
             command=self.devolver_seleccionado
         ).pack(side="left", padx=10)
 
+    # Funcion centrar_ventana: realiza una parte del funcionamiento del programa
     def centrar_ventana(self, win, ancho, alto):
         win.update_idletasks()
 
@@ -264,6 +283,7 @@ class BibliotecaApp:
     # 6. MÓDULO USUARIOS
     # =========================================================
 
+    # Funcion mostrar_usuarios: realiza una parte del funcionamiento del programa
     def mostrar_usuarios(self):
         self.limpiar_contenido()
 
@@ -324,6 +344,7 @@ class BibliotecaApp:
             command=self.eliminar_usuario_seleccionado
         ).pack(side="left", padx=10)
 
+    # Funcion cargar_usuarios: realiza una parte del funcionamiento del programa
     def cargar_usuarios(self):
         for i in self.tabla_usuarios.get_children():
             self.tabla_usuarios.delete(i)
@@ -339,6 +360,7 @@ class BibliotecaApp:
                 )
             )
 
+    # Funcion generar_id_usuario: realiza una parte del funcionamiento del programa
     def generar_id_usuario(self):
         ids_existentes = {
             str(usuario._id)
@@ -350,6 +372,7 @@ class BibliotecaApp:
             if nuevo_id not in ids_existentes:
                 return nuevo_id
 
+    # Funcion formulario_usuario: realiza una parte del funcionamiento del programa
     def formulario_usuario(self):
         win = self.abrir_formulario("Nuevo Usuario")
         win.configure(bg="#0f172a")
@@ -382,6 +405,8 @@ class BibliotecaApp:
 
             entries[campo] = entry
 
+        # Esta funcion guarda datos
+
         def guardar():
             from models.usuario import Usuario
 
@@ -410,6 +435,7 @@ class BibliotecaApp:
         )
         btn.pack(fill="x", pady=(15, 0))
 
+    # Funcion eliminar_usuario_seleccionado: realiza una parte del funcionamiento del programa
     def eliminar_usuario_seleccionado(self):
         item = self.tabla_usuarios.selection()
         if not item:
@@ -418,6 +444,7 @@ class BibliotecaApp:
         if self.service.eliminar_usuario(str(u_id)):
             self.cargar_usuarios()
 
+    # Funcion formulario_editar_usuario: realiza una parte del funcionamiento del programa
     def formulario_editar_usuario(self):
         item = self.tabla_usuarios.selection()
         if not item:
@@ -433,6 +460,8 @@ class BibliotecaApp:
         name_entry.insert(0, valores[1])
         name_entry.pack(fill="x", ipady=6)
 
+        # Esta funcion guarda datos
+
         def guardar():
             self.service.modificar_usuario(u_id, {"nombre": name_entry.get()})
             self.cargar_usuarios()
@@ -444,6 +473,7 @@ class BibliotecaApp:
     # 5. MÓDULO MATERIALES
     # =========================================================
 
+    # Funcion mostrar_materiales: realiza una parte del funcionamiento del programa
     def mostrar_materiales(self):
         self.limpiar_contenido()
 
@@ -461,6 +491,7 @@ class BibliotecaApp:
         self.crear_seccion_material(cont, "💻 Recursos Digitales", "digital")
         self.crear_seccion_material(cont, "📰 Revistas", "revista")
 
+    # Funcion crear_seccion_material: realiza una parte del funcionamiento del programa
     def crear_seccion_material(self, parent, titulo, tipo):
         frame = tk.Frame(parent, bg="#1e293b")
         frame.pack(fill="x", padx=20, pady=10)
@@ -485,6 +516,7 @@ class BibliotecaApp:
         btn_frame = tk.Frame(top, bg="#1e293b")
         btn_frame.pack(side="right")
 
+        # Funcion btn: realiza una parte del funcionamiento del programa
         def btn(txt, color):
             return tk.Button(
                 btn_frame,
@@ -498,6 +530,7 @@ class BibliotecaApp:
                 cursor="hand2"
             )
 
+        # Funcion accion_add: realiza una parte del funcionamiento del programa
         def accion_add():
             if tipo == "libro":
                 self.formulario_nuevo_libro("Libro")
@@ -563,6 +596,7 @@ class BibliotecaApp:
 
         tabla.pack(fill="x", padx=10, pady=(0, 10))
 
+        # Funcion accion_delete: realiza una parte del funcionamiento del programa
         def accion_delete():
             item = tabla.selection()
             if not item:
@@ -571,6 +605,7 @@ class BibliotecaApp:
             if self.service.eliminar_material(m_id):
                 cargar(entry.get())
 
+        # Funcion accion_edit: realiza una parte del funcionamiento del programa
         def accion_edit():
             item = tabla.selection()
             if not item:
@@ -582,6 +617,8 @@ class BibliotecaApp:
         btn_edit.config(command=accion_edit)
 
         # Cargar datos
+        # Esta funcion carga datos
+
         def cargar(filtro=""):
             for i in tabla.get_children():
                 tabla.delete(i)
@@ -617,6 +654,7 @@ class BibliotecaApp:
         entry.bind("<KeyRelease>", lambda e: cargar(entry.get()))
         cargar()
 
+    # Funcion cargar_materiales: realiza una parte del funcionamiento del programa
     def cargar_materiales(self, filtro=""):
         for i in self.tabla_materiales.get_children():
             self.tabla_materiales.delete(i)
@@ -642,6 +680,7 @@ class BibliotecaApp:
                 )
             )
 
+    # Funcion generar_id_material: realiza una parte del funcionamiento del programa
     def generar_id_material(self):
         ids_existentes = {
             str(material._id)
@@ -654,6 +693,7 @@ class BibliotecaApp:
             if nuevo_id not in ids_existentes:
                 return nuevo_id
 
+    # Funcion formulario_nuevo_libro: realiza una parte del funcionamiento del programa
     def formulario_nuevo_libro(self, tipo_preseleccionado="Libro"):
         win = self.abrir_formulario("Nuevo Material")
         win.configure(bg="#0f172a")
@@ -683,6 +723,8 @@ class BibliotecaApp:
             entry = tk.Entry(main, bg="#1f2937", fg="white", relief="flat")
             entry.pack(fill="x", ipady=6)
             entries[campo] = entry
+
+        # Esta funcion guarda datos
 
         def guardar():
             from models.libro import Libro
@@ -715,6 +757,7 @@ class BibliotecaApp:
             command=guardar
         ).pack(fill="x", pady=15)
 
+    # Funcion formulario_editar_material_seccion: realiza una parte del funcionamiento del programa
     def formulario_editar_material_seccion(self, valores, tipo, callback_cargar):
         material_id = str(valores[0])
         
@@ -747,6 +790,8 @@ class BibliotecaApp:
             entry.pack(fill="x", ipady=6)
             entries[campo] = entry
 
+        # Esta funcion guarda datos
+
         def guardar():
             datos = {
                 "titulo": entries["Título"].get(),
@@ -773,6 +818,7 @@ class BibliotecaApp:
     # 6. MÓDULO PRESTAMOS Y DEVOLUCIONES
     # =========================================================
 
+    # Funcion cargar_prestamos: realiza una parte del funcionamiento del programa
     def cargar_prestamos(self):
         for i in self.tabla_prestamos.get_children():
             self.tabla_prestamos.delete(i)
@@ -796,6 +842,7 @@ class BibliotecaApp:
                 )
             )
 
+    # Funcion formulario_prestar: realiza una parte del funcionamiento del programa
     def formulario_prestar(self):
         win = self.abrir_formulario("Realizar Préstamo", alto=400)
 
@@ -899,6 +946,7 @@ class BibliotecaApp:
         # PRESTAR
         # =========================
 
+        # Funcion realizar: realiza una parte del funcionamiento del programa
         def realizar():
             try:
 
@@ -940,6 +988,7 @@ class BibliotecaApp:
             command=realizar
         ).pack(fill="x", pady=20)
 
+    # Funcion devolver_seleccionado: realiza una parte del funcionamiento del programa
     def devolver_seleccionado(self):
         item = self.tabla_prestamos.selection()
         if not item:
@@ -957,6 +1006,7 @@ class BibliotecaApp:
     # 7. MÓDULO RESERVAS
     # =========================================================
 
+    # Funcion mostrar_reservas: realiza una parte del funcionamiento del programa
     def mostrar_reservas(self):
         self.limpiar_contenido()
 
@@ -994,6 +1044,7 @@ class BibliotecaApp:
             command=self.formulario_reserva
         ).pack(pady=10)
 
+    # Funcion cargar_reservas: realiza una parte del funcionamiento del programa
     def cargar_reservas(self):
         for i in self.tabla_reservas.get_children():
             self.tabla_reservas.delete(i)
@@ -1009,6 +1060,7 @@ class BibliotecaApp:
                 )
             )
 
+    # Funcion formulario_reserva: realiza una parte del funcionamiento del programa
     def formulario_reserva(self):
         win = self.abrir_formulario("Nueva Reserva", alto=250)
         main = self.crear_scrollable_frame(win)
@@ -1021,6 +1073,7 @@ class BibliotecaApp:
         m_id = tk.Entry(main, bg="#1f2937", fg="white")
         m_id.pack(fill="x", ipady=6)
 
+        # Funcion realizar: realiza una parte del funcionamiento del programa
         def realizar():
             try:
                 self.service.reservar_material(u_id.get(), m_id.get())
@@ -1036,6 +1089,7 @@ class BibliotecaApp:
     # 8. MÓDULO INFORMES
     # =========================================================
 
+    # Funcion mostrar_informes: realiza una parte del funcionamiento del programa
     def mostrar_informes(self):
         self.limpiar_contenido()
 
